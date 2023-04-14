@@ -7,12 +7,12 @@
     This is a custom function written by Mark Connelly, so it may not work as intended. Use at your own risk.
     This function assumes a connection to the Microsoft Graph API is established. If it is not, the function will fail.
 .LINK
-    N/A
+    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/AzureAD/CustomSecurityAttributes/Get-MDCUserBySecAttr.ps1
 .EXAMPLE
     Get-DevOpsUserByCustomSecurityAttributes -CustomSecurityAttributeSet "AttributeSet1" -CustomSecurityAttributeName "Attribute1" -CustomSecurityAttributeValue "AttributeValue"
 #>
 
-Function Get-DevOpsUserByCustomSecurityAttributes {
+Function Get-MDCUserBySecAttr{
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory=$true,Position=0)]
