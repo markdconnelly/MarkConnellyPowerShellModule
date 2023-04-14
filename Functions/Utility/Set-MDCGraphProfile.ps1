@@ -1,13 +1,13 @@
 <#
 .SYNOPSIS
-    This function will switch the graph profile as an application service principal that is pre-defined.
+    This function will switch the graph profile between v1.0 and beta.
 .DESCRIPTION
     Quick connect function to refresh graph api connection.
 .NOTES
-    This is a custom function written by Mark Connelly, so it may not work as intended. Use at your own risk.
-    This function assumes a secret store with the appropriate variables is in place. If it is not, the function will fail.
+    This is a custom function written by Mark Connelly, so it may not work as intended.
+    This function assumes a connection to the Graph API exists. If it does not, the function will fail.
 .LINK
-    N/A
+    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/Utility/Set-MDCGraphProfile.ps1
 .EXAMPLE
     Set-MDCGraphProfile -ProfileName "Beta"
 #>
