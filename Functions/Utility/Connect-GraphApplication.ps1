@@ -9,12 +9,18 @@
 .LINK
     N/A
 .EXAMPLE
-    Connect-GraphApplication 
-    Connect-GraphApplication -Production $false
-    Connect-GraphApplication -Production $true
+    Connect-MDCGraphApplication 
+    Connect-MDCGraphApplication -Production $false
+    Connect-MDCGraphApplication -Production $true
 #>
 
-Function Connect-GraphApplication {
+Function Connect-MDCGraphApplication {
+    [CmdletBinding()]
+    Param (
+        [Parameter(Mandatory=$false,Position=0)]
+        [bool]$ProductionEnvironment = $false
+    )
+
     $strClientID = Get-Secret -Name PSAppID -AsPlainText
     $strTenantID = Get-Secret -Name PSAppTenantID -AsPlainText
     $strClientSecret = Get-Secret -Name PSAppSecret -AsPlainText
