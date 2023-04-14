@@ -4,7 +4,7 @@
 .DESCRIPTION
     Quick connect function to refresh graph api connection.
 .NOTES
-    This is a custom function written by Mark Connelly, so it may not work as intended. Use at your own risk.
+    This is a custom function written by Mark Connelly, so it may not work as intended.
     This function assumes a secret store with the appropriate variables is in place. If it is not, the function will fail.
 .LINK
     N/A
