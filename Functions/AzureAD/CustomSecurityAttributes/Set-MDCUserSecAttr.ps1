@@ -9,10 +9,11 @@
 .LINK
     N/A
 .EXAMPLE
-    Set-UserCustomSecurityAttribute -UserPrincipalName "user1@domain.com" -AttributeSet "Set1" -AttributeName "Attribute1" -AttributeValue "Value1"
+    Set-MDCUserSecAttr -UserPrincipalName "user1@domain.com" -AttributeSet "Set1" -AttributeName "Attribute1" -AttributeValue "Value1"
+    Set-MDCUserSecAttr -UserPrincipalName "user1@domain.com" -AttributeSet "Set1" -AttributeName "Attribute1" -AttributeValue "Value1" -ProductionEnvironment $true
 #>
 
-Function Set-UserCustomSecurityAttribute{
+Function Set-MDCUserSecAttr{
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory=$true,Position=0)]
