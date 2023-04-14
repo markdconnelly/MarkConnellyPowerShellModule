@@ -9,7 +9,7 @@
 .LINK
     https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/AzureAD/CustomSecurityAttributes/Get-MDCUserBySecAttr.ps1
 .EXAMPLE
-    Get-DevOpsUserByCustomSecurityAttributes -CustomSecurityAttributeSet "AttributeSet1" -CustomSecurityAttributeName "Attribute1" -CustomSecurityAttributeValue "AttributeValue"
+    Get-MDCUserBySecAttr -CustomSecurityAttributeSet "AttributeSet1" -CustomSecurityAttributeName "Attribute1" -CustomSecurityAttributeValue "AttributeValue"
 #>
 
 Function Get-MDCUserBySecAttr{
