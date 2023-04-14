@@ -113,6 +113,7 @@ Function Get-MDCAzureADAdminReport {
         $strFullFilePath = "$ExportPath\AADAdmins_$strFilePathDate.csv"
         $psobjRoles | Export-Csv -Path $strFullFilePath -NoTypeInformation
     }
+    return $psobjRoles
 }#End Function Get-GetAzureADAdministrators
 
 
