@@ -42,7 +42,7 @@ PowerShellVersion = '5.1'
 # PowerShellHostVersion = ''
 
 # Minimum version of Microsoft .NET Framework required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
-DotNetFrameworkVersion = '4.7.2'
+# DotNetFrameworkVersion = '4.7.2'
 
 # Minimum version of the common language runtime (CLR) required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
 # ClrVersion = ''
@@ -51,7 +51,7 @@ DotNetFrameworkVersion = '4.7.2'
 # ProcessorArchitecture = ''
 
 # Modules that must be imported into the global environment prior to importing this module
-RequiredModules = @('Az', 'Microsoft.Graph','Microsoft.PowerShell.SecretManagement','Microsoft.PowerShell.SecretStore')
+# RequiredModules = @('Az', 'Microsoft.Graph','Microsoft.PowerShell.SecretManagement','Microsoft.PowerShell.SecretStore')
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()
