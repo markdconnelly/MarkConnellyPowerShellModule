@@ -7,7 +7,7 @@
     This is a custom function written by Mark Connelly, so it may not work as intended.
     This function assumes a valid psobj, file path, and name attribtue are passed to it. If it is not, the function will fail.
 .LINK
-    N/A
+    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/Utility/Out-MDCToCSV.ps1
 .EXAMPLE
     Out-MDCToCSV -psobj $PSObj -ExportPath $ExportPath -FileName $FileName
     Out-MDCToCSV -psobj $PSObj -ExportPath $ExportPath -FileName $FileName
