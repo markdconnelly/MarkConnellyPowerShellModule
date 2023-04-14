@@ -10,8 +10,8 @@
     N/A
 .EXAMPLE
     Connect-MDCGraphApplication 
-    Connect-MDCGraphApplication -Production $false
-    Connect-MDCGraphApplication -Production $true
+    Connect-MDCGraphApplication -ProductionEnvironment $false
+    Connect-MDCGraphApplication -ProductionEnvironment $true
 #>
 
 Function Connect-MDCGraphApplication {
@@ -20,10 +20,21 @@ Function Connect-MDCGraphApplication {
         [Parameter(Mandatory=$false,Position=0)]
         [bool]$ProductionEnvironment = $false
     )
-
-    $strClientID = Get-Secret -Name PSAppID -AsPlainText
-    $strTenantID = Get-Secret -Name PSAppTenantID -AsPlainText
-    $strClientSecret = Get-Secret -Name PSAppSecret -AsPlainText
+    if($ProductionEnvironment -eq $true){
+        Write-Verbose "Connecting to Production Environment"
+        $strClientID = Get-Secret -Name PrdPSAppID -AsPlainText
+        $strTenantID = Get-Secret -Name PrdPSAppTenantID -AsPlainText
+        $strClientSecret = Get-Secret -Name PrdPSAppSecret -AsPlainText
+    }
+    else {
+        Write-Verbose "Connecting to Development Environment"
+        $strClientID = Get-Secret -Name DevPSAppID -AsPlainText
+        $strTenantID = Get-Secret -Name DevPSAppTenantID -AsPlainText
+        $strClientSecret = Get-Secret -Name DevPSAppSecret -AsPlainText
+    }
+    Write-Verbose "Client ID: $strClientID"
+    Write-Verbose "Tenant ID: $strTenantID"
+    Write-Verbose "Creating API uri & body to request access token"
     $strAPI_URI = "https://login.microsoftonline.com/$strTenantID/oauth2/token"
     $arrAPI_Body = @{
         grant_type = "client_credentials"
@@ -31,6 +42,7 @@ Function Connect-MDCGraphApplication {
         client_secret = $strClientSecret
         resource = "https://graph.microsoft.com"
     }
+    Write-Verbose "Requesting access token from $strAPI_URI"
     $objAccessTokenRaw = Invoke-RestMethod -Method Post -Uri $strAPI_URI -Body $arrAPI_Body -ContentType "application/x-www-form-urlencoded"
     $objAccessToken = $objAccessTokenRaw.access_token
     Connect-Graph -Accesstoken $objAccessToken
