@@ -1,5 +1,5 @@
 # Universal psm file
-# Requires -Version 5.0
+# Requires -Version 5.1
 
 # Export nothing to clear implicit exports
 Export-ModuleMember
