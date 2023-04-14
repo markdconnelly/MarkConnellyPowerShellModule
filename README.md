@@ -15,7 +15,8 @@ Functions also depend on the following secrets being stored in the secret store:
  - PrdPSAppTenantID = (Your Production Tenant ID)
  - PrdPSAppSecret = (Your Production Client Secret)
 
-See .\Scipts\Environment\Set-ModuleSecrets.ps1 for an example
+See for an example:
+https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Scripts/Environment/Set-ModuleSecrets.ps1
 
 This module will only work in this directory
 "C:\PS_CustomModules"
