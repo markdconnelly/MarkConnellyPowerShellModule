@@ -9,6 +9,24 @@
 .LINK
     N/A
 .EXAMPLE
-    Out-MDCToCSV -psobj $psobj -ExportPath $ExportPath -FileName $FileName
-    Out-MDCToCSV -psobj $psobj -ExportPath $ExportPath -FileName $FileName
+    Out-MDCToCSV -psobj $PSObj -ExportPath $ExportPath -FileName $FileName
+    Out-MDCToCSV -psobj $PSObj -ExportPath $ExportPath -FileName $FileName
 #>
+Function Out-MDCToCSV {
+    [CmdletBinding()]
+    Param (
+        [Parameter(Mandatory=$true,Position=0)]
+        [PSCustomObject[]]$PSObj,
+        [Parameter(Mandatory=$true,Position=1)]
+        [string]$FileName,
+        [Parameter(Mandatory=$true,Position=2)]
+        [string]$ExportPath
+    )
+    $dateNow = $null
+    $dateNow = Get-Date 
+    $strFilePathDate = $null
+    $strFilePathDate = $dateNow.ToString("yyyyMMddhhmm")
+    $strFullFilePath = $null
+    $strFullFilePath = $ExportPath + "\" + $FileName + "_" + $strFilePathDate + ".csv"
+    $PSObj | Export-Csv -Path $strFullFilePath -NoTypeInformation
+}
