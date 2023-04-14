@@ -17,13 +17,15 @@ Function Get-MDCAzureADAdminReport {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory=$false,Position=0)]
-        [string]$ExportPath
+        [string]$ExportPath,
+        [Parameter(Mandatory=$false,Position=1)]
+        [bool]$ProductionEnvironment = $false
     )
 
     # Connect to the Microsoft Graph API
     try {
         Write-Verbose "Connecting to Graph"
-        Connect-MDCGraphApplication -ErrorAction Stop
+        Connect-MDCGraphApplication -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop
     }
     catch {
         Write-Verbose "Unable to connect to Graph"
@@ -104,14 +106,8 @@ Function Get-MDCAzureADAdminReport {
 
     # If the ExportPath parameter is passed, export the results to a CSV file
     if($ExportPath){
-        Write-Verbose "Exporting to $ExportPath"
-        $dateNow = $null
-        $strFilePathDate = $null
-        $strFullFilePath = $null
-        $dateNow = Get-Date 
-        $strFilePathDate = $dateNow.ToString("yyyyMMddhhmm")
-        $strFullFilePath = "$ExportPath\AADAdmins_$strFilePathDate.csv"
-        $psobjRoles | Export-Csv -Path $strFullFilePath -NoTypeInformation
+        Write-Verbose "Exporting AAD Admin Report to $ExportPath"
+        Out-MDCToCSV -PSObj $psobjRoles -ExportPath $ExportPath -FileName "AADAdminReport"
     }
     return $psobjRoles
 }#End Function Get-GetAzureADAdministrators
