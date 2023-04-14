@@ -7,7 +7,7 @@
     This is a custom function written by Mark Connelly, so it may not work as intended. Use at your own risk.
     This function assumes a secret store with the appropriate variables is in place. If it is not, the function will fail.
 .LINK
-    N/A
+    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/AzureAD/CustomSecurityAttributes/Set-MDCUserSecAttr.ps1
 .EXAMPLE
     Set-MDCUserSecAttr -UserPrincipalName "user1@domain.com" -AttributeSet "Set1" -AttributeName "Attribute1" -AttributeValue "Value1"
     Set-MDCUserSecAttr -UserPrincipalName "user1@domain.com" -AttributeSet "Set1" -AttributeName "Attribute1" -AttributeValue "Value1" -ProductionEnvironment $true
