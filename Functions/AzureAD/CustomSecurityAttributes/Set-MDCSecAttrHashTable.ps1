@@ -9,7 +9,7 @@
 .LINK
     N/A
 .EXAMPLE
-    Set-CustomSecurityAttributeHashTable -AttributeSet "Set1" -AttributeName "Attribute1" -AttributeValue "Value1"
+    Set-MDCSecAttrHashTable -AttributeSet "Set1" -AttributeName "Attribute1" -AttributeValue "Value1"
 #>
 Function Set-UserCustomSecurityAttribute{
     [CmdletBinding()]
