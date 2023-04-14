@@ -7,7 +7,7 @@
     This is a custom function written by Mark Connelly, so it may not work as intended.
     This function assumes a connection to the Graph API exists. If it does not, the function will fail.
 .LINK
-    N/A
+    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/AzureAD/ConditionalAccess/Get-MDCConditionalAccessExecutiveSummary.ps1
 .EXAMPLE
     Get-MDCConditionalAccessExecutiveSummary
     Get-MDCConditionalAccessExecutiveSummary -ProductionEnvironment $true
