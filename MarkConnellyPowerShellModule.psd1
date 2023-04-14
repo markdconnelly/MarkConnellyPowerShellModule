@@ -33,7 +33,7 @@ Copyright = '(c) Mark D. Connelly Jr. All rights reserved.'
 Description = 'This library contains functions and scripts that I wrote.'
 
 # Minimum version of the PowerShell engine required by this module
-PowerShellVersion = '5.1'
+# PowerShellVersion = '5.1'
 
 # Name of the PowerShell host required by this module
 # PowerShellHostName = ''
