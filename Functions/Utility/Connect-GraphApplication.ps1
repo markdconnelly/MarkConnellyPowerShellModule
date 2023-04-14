@@ -9,10 +9,12 @@
 .LINK
     N/A
 .EXAMPLE
-    Connect-GraphAutomation
+    Connect-GraphApplication 
+    Connect-GraphApplication -Production $false
+    Connect-GraphApplication -Production $true
 #>
 
-Function Connect-GraphAutomation {
+Function Connect-GraphApplication {
     $strClientID = Get-Secret -Name PSAppID -AsPlainText
     $strTenantID = Get-Secret -Name PSAppTenantID -AsPlainText
     $strClientSecret = Get-Secret -Name PSAppSecret -AsPlainText
