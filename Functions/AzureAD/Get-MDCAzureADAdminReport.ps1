@@ -1,15 +1,16 @@
 <#
 .SYNOPSIS
-    This function will connect to the graph api as an application service principal that is pre-defined.
+    This function will produce a psobject with admins and their various permissions. If an export path parameter is provided, the function will export the results to a csv file.
 .DESCRIPTION
-    Quick connect function to refresh graph api connection.
+    Identifying excessive admin permissions is the goal. This report will provide the information that you need to identify and remediate excessive permissions.
 .NOTES
-    This is a custom function written by Mark Connelly, so it may not work as intended. Use at your own risk.
+    This is a custom function written by Mark Connelly, so it may not work as intended.
     This function assumes a secret store with the appropriate variables is in place. If it is not, the function will fail.
 .LINK
     N/A
 .EXAMPLE
-    Connect-GraphAutomation
+    Get-MDCAzureADAdminReport
+    Get-MDCAzureADAdminReport -ExportPath "C:\Temp\"
 #>
 
 Function Get-MDCAzureADAdminReport {
@@ -22,7 +23,7 @@ Function Get-MDCAzureADAdminReport {
     # Connect to the Microsoft Graph API
     try {
         Write-Verbose "Connecting to Graph"
-        Connect-GraphAutomation -ErrorAction Stop
+        Connect-MDCGraphApplication -ErrorAction Stop
     }
     catch {
         Write-Verbose "Unable to connect to Graph"
