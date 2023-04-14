@@ -111,16 +111,16 @@ PrivateData = @{
                  "RESTful API")
 
         # A URL to the license for this module.
-        LicenseUri = 'https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/LICENSE'
+        # LicenseUri = 'https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/LICENSE'
 
         # A URL to the main website for this project.
-        ProjectUri = 'https://github.com/users/markdconnelly/projects/1/views/1'
+        # ProjectUri = 'https://github.com/users/markdconnelly/projects/1/views/1'
 
         # A URL to an icon representing this module.
         # IconUri = ''
 
         # ReleaseNotes of this module
-        ReleaseNotes = 'https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/ReleaseNotes'
+        # ReleaseNotes = 'https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/ReleaseNotes'
 
         # Prerelease string of this module
         # Prerelease = ''
@@ -136,7 +136,7 @@ PrivateData = @{
 } # End of PrivateData hashtable
 
 # HelpInfo URI of this module
-HelpInfoURI = 'https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/README.md'
+# HelpInfoURI = 'https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/README.md'
 
 # Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
 # DefaultCommandPrefix = ''
