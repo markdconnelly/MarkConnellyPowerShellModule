@@ -9,10 +9,10 @@
 .LINK
     N/A
 .EXAMPLE
-    Set-GraphProfile -ProfileName "Beta"
+    Set-MDCGraphProfile -ProfileName "Beta"
 #>
 
-Function Set-GraphProfile {
+Function Set-MDCGraphProfile {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory=$true,Position=0)]
