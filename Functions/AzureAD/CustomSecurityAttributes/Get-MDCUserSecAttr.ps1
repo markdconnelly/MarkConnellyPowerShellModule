@@ -7,13 +7,13 @@
     This is a custom function written by Mark Connelly, so it may not work as intended. Use at your own risk.
     This function assumes a connection to the Microsoft Graph API is established. If it is not, the function will fail.
 .LINK
-    N/A
+    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/AzureAD/CustomSecurityAttributes/Get-MDCUserSecAttr.ps1
 .EXAMPLE
-    Get-UserCustomSecurityAttributes -UserPrincipalName "user@contoso.org" -CustomSecurityAttributeSet "AttributeSet1" -CustomSecurityAttribute "Attribute1"
+    Get-MDCUserSecAttr -UserPrincipalName "user@contoso.org" -CustomSecurityAttributeSet "AttributeSet1" -CustomSecurityAttribute "Attribute1"
         If only a UPN is passed, the function will return all custom security attributes for the user.
 #>
 
-Function Get-UserCustomSecurityAttributes {
+Function Get-MDCUserSecAttr {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory=$true,Position=0)]
