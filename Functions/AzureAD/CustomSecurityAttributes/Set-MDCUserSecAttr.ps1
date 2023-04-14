@@ -22,11 +22,13 @@ Function Set-UserCustomSecurityAttribute{
         [Parameter(Mandatory=$true,Position=2)]
         [string]$CustomSecurityAttributeName,
         [Parameter(Mandatory=$true,Position=3)]
-        [string]$CustomSecurityAttributeValue
+        [string]$CustomSecurityAttributeValue,
+        [Parameter(Mandatory=$false,Position=4)]
+        [bool]$ProductionEnvironment = $false
     )
  
     # Connect to the Microsoft Graph API
-    Connect-GraphAutomation
+    Connect-GraphAutomation -ProductionEnvironment $ProductionEnvironment
 
     # Switch to the beta profile
     Set-GraphProfile -ProfileName "beta"
