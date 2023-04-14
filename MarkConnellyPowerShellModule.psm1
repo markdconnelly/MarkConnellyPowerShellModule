@@ -20,7 +20,9 @@ Write-Verbose "Function files: $functionFiles"
 # Dot source the function files 
 Foreach ($function in $functionFiles){
     try {
-        . ($function.DirectoryName + "\" + $function.Name)
+        $dotSource = ""
+        $dotSource = ($function.DirectoryName + "\" + $function.Name)
+        . $dotSource
         Write-Verbose "Imported $($function)"
     }
     catch {
