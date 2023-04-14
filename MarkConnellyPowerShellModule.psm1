@@ -2,7 +2,7 @@
 # Requires -Version 5.1
 
 # Export nothing to clear implicit exports
-Export-ModuleMember
+# Export-ModuleMember
 
 # Get function files
 $moduleDirectory = ""
