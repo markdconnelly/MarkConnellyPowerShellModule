@@ -1,19 +1,26 @@
-Write-Verbose "PSModulePath: $Env:PSModulePath"
-Write-Verbose "PSScriptRoot: $PSScriptRoot"
+# Universal psm file
+# Requires -Version 5.1
+
+# Export nothing to clear implicit exports
+# Export-ModuleMember
+
+# Get function files
 $moduleDirectory = ""
 $moduleDirectory = "C:\PS_CustomModules\MarkConnellyPowerShellModule"
 Write-Verbose "Module directory: $moduleDirectory"
+
 $functionPath = ""
 $functionPath = $moduleDirectory + "\Functions\"
 Write-Verbose "Function path: $functionPath"
+
 $functionFiles = @()
-$functionFiles = @(Get-ChildItem -Path $functionPath -Include '*.ps1' -File -ErrorAction Stop) 
+$functionFiles = @(Get-ChildItem -Path $functionPath -Recurse -Include '*.ps1' -File -ErrorAction Stop) 
 Write-Verbose "Function files: $functionFiles"
 
-# Dot source the files
+# Dot source the function files 
 Foreach ($function in $functionFiles){
     try {
-        . ($functionPath + $function.Name)
+        . ($function.DirectoryName + "\" + $function.Name)
         Write-Verbose "Imported $($function)"
     }
     catch {
