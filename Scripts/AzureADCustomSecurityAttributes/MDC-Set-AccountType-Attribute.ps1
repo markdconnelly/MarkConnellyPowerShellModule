@@ -66,6 +66,27 @@ $hashManagedIdentityAccountType = Set-MDCSecAttrHashTable -AttributeSet "CyberSe
 
 #-----------------------------------------------------------[Execution]------------------------------------------------------------
 
+# Set the AccountType attribute for all users
+Foreach ($user in $arrUsers){
+    try {
+        Set-MDCUserSecAttr -UserPrincipalName $user.$UserPrincipalName -AttributeSet "CyberSecurityData" -AttributeName "AccountType" -AttributeValue "User" -ErrorAction Stop
+    }
+    catch {
+        Write-Verbose "Unable to set AccountType attribute for $($user)"
+    }
+}
+
+# Set the AccountType attribute for all service accounts
+Foreach ($serviceAccount in $arrServiceAccounts){
+    try {
+        Set-MDCUserSecAttr -ServicePrincipalName $serviceAccount.$userPrincipalName -AttributeSet "CyberSecurityData" -AttributeName "AccountType" -AttributeValue "Service Account" -ErrorAction Stop
+    }
+    catch {
+        Write-Verbose "Unable to set AccountType attribute for $($serviceAccount)"
+    }
+}
+
+
 #Log-Start -LogPath $sLogPath -LogName $sLogName -ScriptVersion $sScriptVersion
 #Script Execution goes here
 #Log-Finish -LogPath $sLogFile
