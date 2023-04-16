@@ -5,7 +5,6 @@
     This function will validate the security attributes that are passed into the function as valid, and then set that attribute on a user profile.
 .NOTES
     This is a custom function written by Mark Connelly, so it may not work as intended. Use at your own risk.
-    This function assumes a secret store with the appropriate variables is in place. If it is not, the function will fail.
 .LINK
     https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/AzureAD/CustomSecurityAttributes/Set-MDCUserSecAttr.ps1
 .EXAMPLE
