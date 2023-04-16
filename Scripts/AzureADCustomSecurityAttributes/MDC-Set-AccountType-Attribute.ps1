@@ -101,3 +101,4 @@ Foreach ($managedIdentity in $arrManagedIdentities){
         Write-Verbose "Unable to set AccountType attribute for $($managedIdentity)"
     }
 }
+#-----------------------------------------------------------[End Script]------------------------------------------------------------
