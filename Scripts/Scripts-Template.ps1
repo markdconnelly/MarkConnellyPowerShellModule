@@ -40,3 +40,5 @@ $sLogFile = Join-Path -Path $sLogPath -ChildPath $sLogName
 #Log-Start -LogPath $sLogPath -LogName $sLogName -ScriptVersion $sScriptVersion
 #Script Execution goes here
 #Log-Finish -LogPath $sLogFile
+
+#-----------------------------------------------------------[End Script]------------------------------------------------------------
