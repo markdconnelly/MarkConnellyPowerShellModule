@@ -59,9 +59,10 @@ catch {
     Write-Host "Unable to get managed identities"
     $arrManagedIdentities = @()
 }
-
-$hashAppAccountType = Set-MDCSecAttrHashTable 
-
+$hashUserAccountType = Set-MDCSecAttrHashTable -AttributeSet "CyberSecurityData" -AttributeName "AccountType" -AttributeValue "User"
+$hashServiceAccountType = Set-MDCSecAttrHashTable -AttributeSet "CyberSecurityData" -AttributeName "AccountType" -AttributeValue "Service Account"
+$hashAppAccountType = Set-MDCSecAttrHashTable -AttributeSet "CyberSecurityData" -AttributeName "AccountType" -AttributeValue "Application" 
+$hashManagedIdentityAccountType = Set-MDCSecAttrHashTable -AttributeSet "CyberSecurityData" -AttributeName "AccountType" -AttributeValue "Managed Identity"
 
 #-----------------------------------------------------------[Execution]------------------------------------------------------------
 
