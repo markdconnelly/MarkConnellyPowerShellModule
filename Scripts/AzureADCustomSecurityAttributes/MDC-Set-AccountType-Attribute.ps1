@@ -10,10 +10,17 @@
   Purpose/Change: Initial script development
 #>
 
+#---------------------------------------------------------[Initialisations]--------------------------------------------------------
+
+# Connect to the Microsoft Graph API
+Connect-MDCGraphApplication -ErrorAction Stop
+Set-MDCGraphProfile -ProfileName "beta" -ErrorAction Stop
+
+
 #----------------------------------------------------------[Declarations]----------------------------------------------------------
 
-#Script Version
-$sScriptVersion = "1.0"
+# Create arrays to hold users, service accounts, applications, and managed identities.
+
 
 #Log File Info
 $sLogPath = "C:\Windows\Temp"
