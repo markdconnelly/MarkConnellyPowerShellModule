@@ -10,15 +10,15 @@
     Creation Date:  04-16-2023
     Purpose/Change: Initial script development
 .LINK
-    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/AzureAD/Get-MDCEnterpriseApplications.ps1
+    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/AzureAD/Get-MDCManagedIdentity.ps1
 .EXAMPLE
-    Get-MDCEnterpriseApplications
-    Get-MDCEnterpriseApplications -ExportPath "C:\Temp\"
-    Get-MDCEnterpriseApplications -ProductionEnvironment $true
-    Get-MDCEnterpriseApplications -ProductionEnvironment $true -ExportPath "C:\Temp\"
+    Get-MDCManagedIdentity
+    Get-MDCManagedIdentity -ExportPath "C:\Temp\"
+    Get-MDCManagedIdentity -ProductionEnvironment $true
+    Get-MDCManagedIdentity -ProductionEnvironment $true -ExportPath "C:\Temp\"
 #>
 
-Function Get-MDCEnterpriseApplications {
+Function Get-MDCManagedIdentity {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory=$false,Position=0)]
@@ -27,15 +27,15 @@ Function Get-MDCEnterpriseApplications {
         [bool]$ProductionEnvironment = $false
     )
 
-    # Collect array of application service principals
+    # Collect array of managed identity service principals
     $arrAAD_ManagedIdentity = @()
     try {
-        Write-Verbose "Collecting AAD Applications"
-        $arrAAD_ManagedIdentity = Get-MDCApplicationServicePrincipals -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop
+        Write-Verbose "Collecting AAD Managed Identities"
+        $arrAAD_ManagedIdentites = Get-MgServicePrincipal -All:$true -ErrorAction Stop | Where-Object {$_.ServicePrincipalType -eq "ManagedIdentity"}
     }
     catch {
         Write-Verbose "Unable to get AAD Applications"
-        throw "Unable to get AAD Applications"
+        throw "Unable to get AAD Managed Identities"
     }
 
     # Return the array of applications
