@@ -59,10 +59,6 @@ catch {
     Write-Host "Unable to get managed identities"
     $arrManagedIdentities = @()
 }
-$hashUserAccountType = Set-MDCSecAttrHashTable -AttributeSet "CyberSecurityData" -AttributeName "AccountType" -AttributeValue "User"
-$hashServiceAccountType = Set-MDCSecAttrHashTable -AttributeSet "CyberSecurityData" -AttributeName "AccountType" -AttributeValue "Service Account"
-$hashAppAccountType = Set-MDCSecAttrHashTable -AttributeSet "CyberSecurityData" -AttributeName "AccountType" -AttributeValue "Application" 
-$hashManagedIdentityAccountType = Set-MDCSecAttrHashTable -AttributeSet "CyberSecurityData" -AttributeName "AccountType" -AttributeValue "Managed Identity"
 
 #-----------------------------------------------------------[Execution]------------------------------------------------------------
 
@@ -79,14 +75,29 @@ Foreach ($user in $arrUsers){
 # Set the AccountType attribute for all service accounts
 Foreach ($serviceAccount in $arrServiceAccounts){
     try {
-        Set-MDCUserSecAttr -ServicePrincipalName $serviceAccount.$userPrincipalName -AttributeSet "CyberSecurityData" -AttributeName "AccountType" -AttributeValue "Service Account" -ErrorAction Stop
+        Set-MDCUserSecAttr -UserPrincipalName $serviceAccount.$userPrincipalName -AttributeSet "CyberSecurityData" -AttributeName "AccountType" -AttributeValue "Service Account" -ErrorAction Stop
     }
     catch {
         Write-Verbose "Unable to set AccountType attribute for $($serviceAccount)"
     }
 }
 
+# Set the AccountType attribute for all applications
+Foreach ($application in $arrApplications){
+    try {
+        Set-MDCServicePrincipalSecAttr -ServicePrincipalId $application.Id -AttributeSet "CyberSecurityData" -AttributeName "AccountType" -AttributeValue "Application" -ErrorAction Stop
+    }
+    catch {
+        Write-Verbose "Unable to set AccountType attribute for $($application)"
+    }
+}
 
-#Log-Start -LogPath $sLogPath -LogName $sLogName -ScriptVersion $sScriptVersion
-#Script Execution goes here
-#Log-Finish -LogPath $sLogFile
+# Set the AccountType attribute for all managed identities
+Foreach ($managedIdentity in $arrManagedIdentities){
+    try {
+        Set-MDCServicePrincipalSecAttr -ServicePrincipalId $managedIdentity.Id -AttributeSet "CyberSecurityData" -AttributeName "AccountType" -AttributeValue "Managed Identity" -ErrorAction Stop
+    }
+    catch {
+        Write-Verbose "Unable to set AccountType attribute for $($managedIdentity)"
+    }
+}
