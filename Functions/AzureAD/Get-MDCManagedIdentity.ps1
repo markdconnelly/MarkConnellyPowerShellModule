@@ -28,10 +28,10 @@ Function Get-MDCEnterpriseApplications {
     )
 
     # Collect array of application service principals
-    $arrAAD_Applications = @()
+    $arrAAD_ManagedIdentity = @()
     try {
         Write-Verbose "Collecting AAD Applications"
-        $arrAAD_Applications = Get-MDCApplicationServicePrincipals -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop
+        $arrAAD_ManagedIdentity = Get-MDCApplicationServicePrincipals -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop
     }
     catch {
         Write-Verbose "Unable to get AAD Applications"
@@ -39,5 +39,5 @@ Function Get-MDCEnterpriseApplications {
     }
 
     # Return the array of applications
-    return $arrAAD_Applications
+    return $arrAAD_ManagedIdentity
 }
