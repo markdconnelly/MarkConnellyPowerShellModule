@@ -31,7 +31,7 @@ Function Get-MDCEnterpriseApplications {
     $arrAAD_Applications = @()
     try {
         Write-Verbose "Collecting AAD Applications"
-        $arrAAD_Applications = Get-MDCApplicationServicePrincipals -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop
+        $arrAAD_Applications = Get-MgServicePrincipal -All:$true -ErrorAction Stop | Where-Object {$_.ServicePrincipalType -eq "Application" -and $_.Tags -eq "WindowsAzureActiveDirectoryIntegratedApp"} 
     }
     catch {
         Write-Verbose "Unable to get AAD Applications"
