@@ -12,13 +12,13 @@
 .LINK
     https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/AzureAD/Get-MDCEnterpriseApplications.ps1
 .EXAMPLE
-    Get-MDCEnterpriseApplications
-    Get-MDCEnterpriseApplications -ExportPath "C:\Temp\"
-    Get-MDCEnterpriseApplications -ProductionEnvironment $true
-    Get-MDCEnterpriseApplications -ProductionEnvironment $true -ExportPath "C:\Temp\"
+    Get-MDCUsers
+    Get-MDCUsers -ExportPath "C:\Temp\"
+    Get-MDCUsers -ProductionEnvironment $true
+    Get-MDCUsers -ProductionEnvironment $true -ExportPath "C:\Temp\"
 #>
 
-Function Get-MDCEnterpriseApplications {
+Function Get-MDCUsers {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory=$false,Position=0)]
@@ -28,16 +28,20 @@ Function Get-MDCEnterpriseApplications {
     )
 
     # Collect array of application service principals
-    $arrAAD_Applications = @()
+    $arrAAD_Users = @()
     try {
-        Write-Verbose "Collecting AAD Applications"
-        $arrAAD_Applications = Get-MDCApplicationServicePrincipals -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop
+        Write-Verbose "Collecting AAD Users"
+        $arrAAD_Users = Get-MgUser -All:$true -ErrorAction Stop `
+        | Where-Object {$_.UserPrincipalName -notlike "svc*" `
+                -and $_.UserPrincipalName -notlike "*Mailbox*" `
+                -and $_.UserPrincipalName -notlike "Sync_*" `
+                -and $_.UserPrincipalName -notlike "*BreakGlass*"}
     }
     catch {
-        Write-Verbose "Unable to get AAD Applications"
-        throw "Unable to get AAD Applications"
+        Write-Verbose "Unable to get AAD Users"
+        throw "Unable to get AAD Users"
     }
 
     # Return the array of applications
-    return $arrAAD_Applications
+    return $arrAAD_Users
 }
