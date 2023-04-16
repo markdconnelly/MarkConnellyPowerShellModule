@@ -9,7 +9,6 @@
     https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/AzureAD/CustomSecurityAttributes/Set-MDCUserSecAttr.ps1
 .EXAMPLE
     Set-MDCUserSecAttr -UserPrincipalName "user1@domain.com" -AttributeSet "Set1" -AttributeName "Attribute1" -AttributeValue "Value1"
-    Set-MDCUserSecAttr -UserPrincipalName "user1@domain.com" -AttributeSet "Set1" -AttributeName "Attribute1" -AttributeValue "Value1" -ProductionEnvironment $true
 #>
 
 Function Set-MDCUserSecAttr{
@@ -22,13 +21,8 @@ Function Set-MDCUserSecAttr{
         [Parameter(Mandatory=$true,Position=2)]
         [string]$CustomSecurityAttributeName,
         [Parameter(Mandatory=$true,Position=3)]
-        [string]$CustomSecurityAttributeValue,
-        [Parameter(Mandatory=$false,Position=4)]
-        [bool]$ProductionEnvironment = $false
+        [string]$CustomSecurityAttributeValue
     )
- 
-    # Connect to the Microsoft Graph API
-    Connect-GraphAutomation -ProductionEnvironment $ProductionEnvironment
 
     # Switch to the beta profile
     Set-GraphProfile -ProfileName "beta"
@@ -42,7 +36,7 @@ Function Set-MDCUserSecAttr{
         throw "The attribute set and attribute name combination is not valid. Please check the attribute set and attribute name and try again."
     }
     try {
-        $hashAttibuteDefinition = Set-CustomSecurityAttributeHashTable `
+        $hashAttibuteDefinition = Set-MDCSecAttrHashTable `
                                     -AttributeSet $CustomSecurityAttributeSet `
                                     -AttributeName $CustomSecurityAttributeName `
                                     -AttributeValue $CustomSecurityAttributeValue
