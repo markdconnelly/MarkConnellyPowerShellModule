@@ -24,8 +24,23 @@ $arrServiceAccounts = @()
 $arrApplications = @()
 $arrManagedIdentities = @()
 
+# Try to get user objects
+try {
+    $arrUsers = Get-MDCUsers -ErrorAction Stop
+}
+catch {
+    Write-Host "Unable to get users"
+    $arrUsers = @()
+}
 
-
+# Try to get service account objects
+try {
+    $arrServiceAccounts = Get-MDCServiceAccounts -ErrorAction Stop
+}
+catch {
+    Write-Host "Unable to get service accounts"
+    $arrServiceAccounts = @()
+}
 
 # Try to get application objects
 try {
@@ -36,11 +51,17 @@ catch {
     $arrApplications = @()
 }
 
+# Try to get managed identity objects
+try {
+    $arrManagedIdentities = Get-MDCManagedIdentity -ErrorAction Stop
+}
+catch {
+    Write-Host "Unable to get managed identities"
+    $arrManagedIdentities = @()
+}
 
-#Log File Info
-$sLogPath = "C:\Windows\Temp"
-$sLogName = "<script_name>.log"
-$sLogFile = Join-Path -Path $sLogPath -ChildPath $sLogName
+$hashAppAccountType = Set-MDCSecAttrHashTable 
+
 
 #-----------------------------------------------------------[Execution]------------------------------------------------------------
 
