@@ -6,8 +6,10 @@
 .NOTES
     This is a custom function written by Mark Connelly, so it may not work as intended.
 .LINK
-    N/A
+    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/AzureAD/Get-MDCEnterpriseApplications.ps1
 .EXAMPLE
-    Get-MDCAzureADAdminReport
-    Get-MDCAzureADAdminReport -ExportPath "C:\Temp\"
+    Get-MDCEnterpriseApplications
+    Get-MDCEnterpriseApplications -ExportPath "C:\Temp\"
+    Get-MDCEnterpriseApplications -ProductionEnvironment $true
+    Get-MDCEnterpriseApplications -ProductionEnvironment $true -ExportPath "C:\Temp\"
 #>
