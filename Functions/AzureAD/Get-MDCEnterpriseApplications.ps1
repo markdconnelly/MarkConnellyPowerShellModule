@@ -14,17 +14,13 @@
 .EXAMPLE
     Get-MDCEnterpriseApplications
     Get-MDCEnterpriseApplications -ExportPath "C:\Temp\"
-    Get-MDCEnterpriseApplications -ProductionEnvironment $true
-    Get-MDCEnterpriseApplications -ProductionEnvironment $true -ExportPath "C:\Temp\"
 #>
 
 Function Get-MDCEnterpriseApplications {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory=$false,Position=0)]
-        [string]$ExportPath,
-        [Parameter(Mandatory=$false,Position=1)]
-        [bool]$ProductionEnvironment = $false
+        [string]$ExportPath
     )
 
     # Collect array of application service principals
@@ -38,6 +34,11 @@ Function Get-MDCEnterpriseApplications {
         throw "Unable to get AAD Applications"
     }
 
+    # Export the array of applications to a csv file if an export path is provided
+    if($ExportPath){
+        Out-MDCToCSV -psobj $arrAAD_Applications -ExportPath $ExportPath -FileName "AAD_Applications"
+    }
+    
     # Return the array of applications
     return $arrAAD_Applications
 }
