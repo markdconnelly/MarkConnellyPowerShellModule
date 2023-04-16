@@ -1,8 +1,8 @@
 <#
 .SYNOPSIS
-    This function will produce an array of Azure AD users. If an export path parameter is provided, the function will export the results to a csv file.
+    This function will add an array of users to the provided AD group.
 .DESCRIPTION
-    Performing a set of operations on user objects is a common task. This function quickly creates an array of those specific objects.
+    Bulk adding users to new groups is a common task. This function will add an array of users to the provided AD group.
 .NOTES
     This is a custom function written by Mark Connelly, so it may not work as intended.
     Version:        1.0
@@ -10,17 +10,18 @@
     Creation Date:  04-16-2023
     Purpose/Change: Initial script development
 .LINK
-    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/AzureAD/Get-MDCUsers.ps1
+    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/Active%20Directory/Set-MDCBulkGroupMembership.ps1
 .EXAMPLE
-    Get-MDCUsers
-    Get-MDCUsers -ExportPath "C:\Temp\"
+    Set-MDCBulkGroupMembership -UserArray $arrUsers -GroupName "TestGroup"
 #>
 
-Function Get-MDCUsers {
+Function Set-MDCBulkGroupMembership{
     [CmdletBinding()]
     Param (
-        [Parameter(Mandatory=$false,Position=0)]
-        [string]$ExportPath
+        [Parameter(Mandatory=$true,Position=0)]
+        [array]$UserArray,
+        [Parameter(Mandatory=$true,Position=1)]
+        [string]$GroupName
     )
 
     # Collect array of application service principals
