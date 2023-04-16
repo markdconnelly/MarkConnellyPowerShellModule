@@ -2,7 +2,7 @@
 . \Functions\Set-GraphProfile.ps1
 
 Connect-GraphAutomation
-Set-GraphProfile -ProfileName "beta"
+Set-GraphProfile -ProfileName "beta" 
 
 Get-MgProfile
 # Collect array of application service principals
