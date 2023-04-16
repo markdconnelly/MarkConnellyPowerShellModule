@@ -10,15 +10,15 @@
     Creation Date:  04-16-2023
     Purpose/Change: Initial script development
 .LINK
-    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/AzureAD/Get-MDCEnterpriseApplications.ps1
+    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/AzureAD/Get-MDCServiceAccounts.ps1
 .EXAMPLE
-    Get-MDCEnterpriseApplications
-    Get-MDCEnterpriseApplications -ExportPath "C:\Temp\"
-    Get-MDCEnterpriseApplications -ProductionEnvironment $true
-    Get-MDCEnterpriseApplications -ProductionEnvironment $true -ExportPath "C:\Temp\"
+    Get-MDCServiceAccounts
+    Get-MDCServiceAccounts -ExportPath "C:\Temp\"
+    Get-MDCServiceAccounts -ProductionEnvironment $true
+    Get-MDCServiceAccounts -ProductionEnvironment $true -ExportPath "C:\Temp\"
 #>
 
-Function Get-MDCEnterpriseApplications {
+Function Get-MDCServiceAccounts {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory=$false,Position=0)]
@@ -27,17 +27,18 @@ Function Get-MDCEnterpriseApplications {
         [bool]$ProductionEnvironment = $false
     )
 
-    # Collect array of application service principals
-    $arrAAD_Applications = @()
+    # Collect array of service accounts
+    $arrAAD_ServiceAccounts = @()
     try {
-        Write-Verbose "Collecting AAD Applications"
-        $arrAAD_Applications = Get-MDCApplicationServicePrincipals -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop
+        Write-Verbose "Collecting AAD Service Accounts"
+        $arrAAD_ServiceAccounts = Get-MgUser -All:$true -ErrorAction Stop `
+        | Where-Object {$_.UserPrincipalName -like "svc*" -or $_.UserPrincipalName -like "*BreakGlass*"}
     }
     catch {
-        Write-Verbose "Unable to get AAD Applications"
-        throw "Unable to get AAD Applications"
+        Write-Verbose "Unable to get AAD Service Accounts"
+        throw "Unable to get AAD Service Accounts"
     }
 
     # Return the array of applications
-    return $arrAAD_Applications
+    return $arrAAD_ServiceAccounts
 }
