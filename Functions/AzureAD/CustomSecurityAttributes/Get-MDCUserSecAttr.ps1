@@ -9,8 +9,7 @@
 .LINK
     https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/AzureAD/CustomSecurityAttributes/Get-MDCUserSecAttr.ps1
 .EXAMPLE
-    Get-MDCUserSecAttr -UserPrincipalName "user@contoso.org" -CustomSecurityAttributeSet "AttributeSet1" -CustomSecurityAttribute "Attribute1"
-        If only a UPN is passed, the function will return all custom security attributes for the user.
+    Get-MDCUserSecAttr -UserPrincipalName "user@contoso.org" 
 #>
 
 Function Get-MDCUserSecAttr {
@@ -19,9 +18,6 @@ Function Get-MDCUserSecAttr {
         [Parameter(Mandatory=$true,Position=0)]
         [string]$UserId
     )
-
-    # Connect to the Microsoft Graph API
-    Connect-GraphAutomation
 
     # Switch to the beta profile
     Set-GraphProfile -ProfileName "beta"
@@ -58,5 +54,6 @@ Function Get-MDCUserSecAttr {
     Set-GraphProfile -ProfileName "v1.0"
     
     Write-Host "Custom Security Attributes for $UserId"
+    Write-Host $psobjUserCustomSecurityAttributes
     return $psobjUserCustomSecurityAttributes
 }
