@@ -34,7 +34,7 @@ Function Get-MDCManagedIdentity {
         $arrAAD_ManagedIdentites = Get-MgServicePrincipal -All:$true -ErrorAction Stop | Where-Object {$_.ServicePrincipalType -eq "ManagedIdentity"}
     }
     catch {
-        Write-Verbose "Unable to get AAD Applications"
+        Write-Verbose "Unable to get AAD Managed Identities"
         throw "Unable to get AAD Managed Identities"
     }
 
