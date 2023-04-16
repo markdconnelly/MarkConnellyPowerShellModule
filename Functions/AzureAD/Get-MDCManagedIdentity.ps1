@@ -1,8 +1,8 @@
 <#
 .SYNOPSIS
-    This function will produce an array of Azure AD Enterprise Applications. If an export path parameter is provided, the function will export the results to a csv file.
+    This function will produce an array of Azure AD managed identities. If an export path parameter is provided, the function will export the results to a csv file.
 .DESCRIPTION
-    Performing a set of operations on application service principals is a common task. This function quickly creates an array of those specific objects.
+    Performing a set of operations on managed identities is a common task. This function quickly creates an array of those specific objects.
 .NOTES
     This is a custom function written by Mark Connelly, so it may not work as intended.
     Version:        1.0
@@ -14,30 +14,31 @@
 .EXAMPLE
     Get-MDCManagedIdentity
     Get-MDCManagedIdentity -ExportPath "C:\Temp\"
-    Get-MDCManagedIdentity -ProductionEnvironment $true
-    Get-MDCManagedIdentity -ProductionEnvironment $true -ExportPath "C:\Temp\"
 #>
 
 Function Get-MDCManagedIdentity {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory=$false,Position=0)]
-        [string]$ExportPath,
-        [Parameter(Mandatory=$false,Position=1)]
-        [bool]$ProductionEnvironment = $false
+        [string]$ExportPath
     )
 
     # Collect array of managed identity service principals
     $arrAAD_ManagedIdentity = @()
     try {
         Write-Verbose "Collecting AAD Managed Identities"
-        $arrAAD_ManagedIdentites = Get-MgServicePrincipal -All:$true -ErrorAction Stop | Where-Object {$_.ServicePrincipalType -eq "ManagedIdentity"}
+        $arrAAD_ManagedIdentity = Get-MgServicePrincipal -All:$true -ErrorAction Stop | Where-Object {$_.ServicePrincipalType -eq "ManagedIdentity"}
     }
     catch {
         Write-Verbose "Unable to get AAD Managed Identities"
         throw "Unable to get AAD Managed Identities"
     }
 
+    # Export the array of applications to a csv file if an export path is provided
+    if($ExportPath){
+        Out-MDCToCSV -psobj $arrAAD_ManagedIdentity -ExportPath $ExportPath -FileName "AAD_ManagedIdentity"
+    }
+    
     # Return the array of applications
     return $arrAAD_ManagedIdentity
 }
