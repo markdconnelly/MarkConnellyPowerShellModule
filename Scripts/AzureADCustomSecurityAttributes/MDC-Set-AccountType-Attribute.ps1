@@ -16,10 +16,25 @@
 Connect-MDCGraphApplication -ErrorAction Stop
 Set-MDCGraphProfile -ProfileName "beta" -ErrorAction Stop
 
-
 #----------------------------------------------------------[Declarations]----------------------------------------------------------
 
 # Create arrays to hold users, service accounts, applications, and managed identities.
+$arrUsers = @()
+$arrServiceAccounts = @()
+$arrApplications = @()
+$arrManagedIdentities = @()
+
+
+
+
+# Try to get application objects
+try {
+    $arrApplications = Get-MDCEnterpriseApplications -ErrorAction Stop
+}
+catch {
+    Write-Host "Unable to get applications"
+    $arrApplications = @()
+}
 
 
 #Log File Info
