@@ -49,5 +49,8 @@ Function Set-MDCBulkGroupMembership{
     if($arrResolvedUsers.Count -ne $UserArray.Count){
         # Alert and exit function
         Write-Host "Number of resolved users:""$($arrResolvedUsers.Count)"" does not match number of users in input:""$($UserArray.Count)""; Stopping..." `
+        return
     }
+
+
 }
