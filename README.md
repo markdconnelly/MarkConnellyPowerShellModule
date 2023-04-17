@@ -63,7 +63,10 @@ Permissions required for this module are listed below:
     - Reader role assigned at the top management group
 
 ## Secret Dependencies
-This module has a few secrets that must be stored in the SecretStore in order to function properly.  These secrets are listed below:
+This module has a few secrets that must be stored in the SecretStore in order to function properly.  
+The default method of connecting in this module is using a service principal. A parameter allows you to quickly switch from a development environment to a production environment.  
+  
+The required secrets are listed below:
 1. Development Application:
     - DevPSAppID = (Your Development Application (Client) ID)
     - DevPSAppTenantID = (Your Development Tenant ID)
