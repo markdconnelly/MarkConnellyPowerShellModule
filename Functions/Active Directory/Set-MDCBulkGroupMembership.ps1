@@ -114,7 +114,7 @@ Function Set-MDCBulkGroupMembership{
 
     # Export results to CSV if the export path is provided
     if($ExportPath -ne $null){
-        $psobjBulkAddResults | Export-Csv -Path $ExportPath -NoTypeInformation
+        Out-MDCToCSV -PSObj $psobjBulkAddResults -FileName "AD_BulkAddTo$($arrGroup.Name)" -ExportPath $ExportPath 
     }
 
     ##Summarize flags and print on screen
