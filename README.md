@@ -1,5 +1,5 @@
 # MarkConnellyPowerShellModule
-This repo contains the PowerShell module owned and maintained by Mark D. Connelly Jr.
+This repo contains the PowerShell module owned and maintained by Mark D. Connelly Jr.  
 This module contains a number of functions and scripts that are used to perform various tasks in the Microsoft 365 and Azure environments.
 
 ## Getting Started
