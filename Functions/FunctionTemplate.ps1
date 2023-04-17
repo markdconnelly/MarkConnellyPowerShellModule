@@ -19,3 +19,16 @@
 .EXAMPLE
     Get-ExampleFunction -ExampleParameter "Example" -ExampleParameter2 "Example2" 
 #>
+
+Function Get-ExampleFunction {
+    [CmdletBinding()]
+    Param (
+        [Parameter(Mandatory=$true,Position=0)]
+        [string]$Variable = $false
+    )
+
+    # Function code goes here
+
+    # Return statement goes here
+    return $Variable
+}
