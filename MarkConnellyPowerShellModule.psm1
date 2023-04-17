@@ -5,12 +5,12 @@
 Export-ModuleMember
 
 # Get function files
-$moduleDirectory = ""
-$moduleDirectory = "C:\PS_CustomModules\MarkConnellyPowerShellModule"
-Write-Verbose "Module directory: $moduleDirectory"
+#$moduleDirectory = ""
+#$moduleDirectory = "C:\PS_CustomModules\MarkConnellyPowerShellModule"
+#Write-Verbose "Module directory: $moduleDirectory"
 
 $functionPath = ""
-$functionPath = $moduleDirectory + "\Functions\"
+$functionPath = $PSScriptRoot + "\Functions\" #$moduleDirectory
 Write-Verbose "Function path: $functionPath"
 
 $functionFiles = @()
@@ -20,9 +20,9 @@ Write-Verbose "Function files: $functionFiles"
 # Dot source the function files 
 Foreach ($function in $functionFiles){
     try {
-        $dotSource = ""
-        $dotSource = ($function.DirectoryName + "\" + $function.Name)
-        . $dotSource
+        #$dotSource = ""
+        #$dotSource = ($function.DirectoryName + "\" + $function.Name)
+        . ($function.DirectoryName + "\" + $function.Name) #$dotSource
         Write-Verbose "Imported $($function)"
     }
     catch {
