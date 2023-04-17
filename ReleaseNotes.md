@@ -4,3 +4,21 @@
  - Last Updated:   4-17-2023
  - Creation Date:  4-16-2023
  - Purpose/Change: Initial module build
+    - Added Function: Connect-MDCGraphApplication
+    - Added Function: Set-MDCGraphProfile
+    - Added Function: Out-MDCToCSV
+    - Added Function: Get-MDCUsers
+    - Added Function: Get-MDCServiceAccounts
+    - Added Function: Get-MDCEnterpriseApplications
+    - Added Function: Get-MDCManagedIdentity
+    - Added Function: Get-MDCAzureADAdminReport
+    - Added Function: Get-MDCAzureResourceAdminReport
+    - Added Function: Get-MDCUserSecAttr
+    - Added Function: Get-MDCUserBySecAttr
+    - Added Function: Get-MDCFlaggedGraphPermissionArray
+    - Added Function: Get-FlaggedAzureADRoleArray
+    - Added Function: Set-MDCUserSecAttr
+    - Added Function: Set-MDCServicePrincipalSecAttr
+    - Added Function: Set-MDCSecAttrHashTable
+    - Added Function: Set-MDCBulkGroupMembership
+
