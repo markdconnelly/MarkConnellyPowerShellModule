@@ -5,8 +5,12 @@
     Produces an array of flagged graph permissions to be in used in comparison operations.
 .NOTES
     This is a custom function written by Mark Connelly, so it may not work as intended.
+    Version:        1.0
+    Author:         Mark D. Connelly Jr.
+    Creation Date:  04-16-2023
+    Purpose/Change: Initial script development
 .LINK
-    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/Utility/Get-FlaggedAzureADRoleArray.ps1
+    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/Utility/Get-MDCFlaggedGraphPermissionArray.ps1
 .EXAMPLE
     $variable = Get-MDCFlaggedGraphPermissionArray
     Get-MDCFlaggedGraphPermissionArray -ExportPath "C:\Temp\"
@@ -56,7 +60,7 @@ Function Get-MDCFlaggedGraphPermissionArray {
     
     # Export the array of applications to a csv file if an export path is provided
     if($ExportPath){
-        Out-MDCToCSV -psobj $flaggedAppRoles -ExportPath $ExportPath -FileName "AAD_FlaggedRoleArray"
+        Out-MDCToCSV -psobj $flaggedAppRoles -ExportPath $ExportPath -FileName "GraphAPI_FlaggedPermissionArray"
     }
 
     return $flaggedAppRoles
