@@ -25,7 +25,7 @@
 Function Connect-MDCAzApplication {
     [CmdletBinding()]
     Param (
-        [Parameter(Mandatory=$true,Position=0)]
+        [Parameter(Mandatory=$false,Position=0)]
         [bool]$ProductionEnvironment = $false
     )
 
