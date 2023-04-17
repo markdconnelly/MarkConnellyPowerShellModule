@@ -3,10 +3,6 @@
   <Overview of script>
 .DESCRIPTION
   <Brief description of script>
-.INPUTS
-  <Inputs if any, otherwise state None>
-.OUTPUTS
-  <Outputs if any, otherwise state None - example: Log file stored in C:\Windows\Temp\<name>.log>
 .NOTES
   Version:        1.0
   Last Updated:   <Date>
