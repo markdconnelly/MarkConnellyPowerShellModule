@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    This function is used to define flagged Azure AD roles.
+    This function is used to define flagged graph api permissions.
 .DESCRIPTION
     Produces an array of flagged graph permissions to be in used in comparison operations.
 .NOTES
@@ -8,11 +8,11 @@
 .LINK
     https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/Utility/Get-FlaggedAzureADRoleArray.ps1
 .EXAMPLE
-    $variable = Get-MDCFlaggedAzureADRoleArray
-    Get-MDCFlaggedAzureADRoleArray -ExportPath "C:\Temp\"
+    $variable = Get-MDCFlaggedGraphPermissionArray
+    Get-MDCFlaggedGraphPermissionArray -ExportPath "C:\Temp\"
 #>
 
-Function Get-MDCFlaggedAzureADRoleArray {
+Function Get-MDCFlaggedGraphPermissionArray {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory=$false,Position=0)]
@@ -53,6 +53,7 @@ Function Get-MDCFlaggedAzureADRoleArray {
                                                                         $_.Value -like "*User*") -and `
                                                                         $_.AllowedMemberTypes -contains "Application"} `
                                                                         | Select-Object Id, Value, DisplayName
+    
     # Export the array of applications to a csv file if an export path is provided
     if($ExportPath){
         Out-MDCToCSV -psobj $flaggedAppRoles -ExportPath $ExportPath -FileName "AAD_FlaggedRoleArray"
