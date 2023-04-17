@@ -25,13 +25,24 @@ Function Set-MDCBulkGroupMembership{
         [Parameter(Mandatory=$true,Position=0)]
         [array]$UserArray,
         [Parameter(Mandatory=$true,Position=1)]
-        [string]$GroupName
+        [string]$GroupName,
+        [Parameter(Mandatory=$false,Position=2)]
+        [string]$ExportPath
     )
+
+    # Validate group name input
+    $arrGroup = $null
+    try {
+        $arrGroup = Get-ADGroup -Identity $GroupName -Properties member -ErrorAction Stop
+    }
+    catch {
+        Write-Host "Unable to resolve group: ""$GroupName""; Stopping..."
+        return
+    }
 
     $intProgress = 1
     $arrResolvedUsers = @()
     foreach($user in $UserArray){
-        ##Progress Bar
         Write-Progress `
             -Activity 'Processing' `
             -Status "$intProgress of $($UserArray.Count)" `
@@ -41,7 +52,7 @@ Function Set-MDCBulkGroupMembership{
         ##Attempt to resolve user from the provided array
         $arrUser = $null
         $arrUser = Get-ADUser -Identity $user.UserID -ErrorAction SilentlyContinue
-        if($arrUser -ne $null){
+        if($null -ne $arrUser){
             $arrResolvedUsers += $arrUser
         }
         $intProgress ++
@@ -52,5 +63,64 @@ Function Set-MDCBulkGroupMembership{
         return
     }
 
+    # Add users to group
+    $intProgress = 1
+    $psobjBulkAddResults = @()
+    foreach($user in $arrResolvedUsers){
+        Write-Progress `
+            -Activity 'Processing' `
+            -Status "$intProgress of $($arrResolvedUsers.Count)" `
+            -CurrentOperation $intProgress `
+            -PercentComplete (($intProgress / @($arrResolvedUsers).Count) * 100)
 
+        # Set default flag values 
+        $strError = "N/A"
+        $boolAction = $false
+        $boolSuccess = $true
+
+        # Check if user is already a member of the group, if not, add user to group. If error, write error to output. 
+        try{
+            if($arrGroup.members -notcontains $user.distinguishedName){
+                ##Add user to group
+                Add-AdGroupMember `
+                    -Identity $arrGroup.Sid `
+                    -Members $user.Sid `
+                    -ErrorAction Stop
+                ##Note that action was taken
+                $boolAction = $true
+            }else{
+                ##Note that action was not taken
+                $boolAction = $false
+                $strError = "User already a member of group"
+            }
+        }
+        catch{
+            ##Note that action failed; Capture error
+            $boolSuccess = $false
+            $strError = $Error[0].Exception.Message
+        }
+        # Add loop output to PSObject
+        $psobjBulkAddResults += [PSCustomObject]@{
+            GroupName = $arrGroup.Name
+            UserName = $user.Name
+            UserSam = $user.SamAccountName
+            UserSid = $user.Sid
+            ActionTaken = $boolAction
+            ActionSuccess = $boolSuccess
+            ActionError = $strError
+        }
+        $intProgress ++
+    }
+
+    # Export results to CSV if the export path is provided
+    if($ExportPath -ne $null){
+        $psobjBulkAddResults | Export-Csv -Path $ExportPath -NoTypeInformation
+    }
+
+    ##Summarize flags and print on screen
+    $psobjBulkAddResults | Group-Object ActionTaken | Select-Object name,count
+    $psobjBulkAddResults | Group-Object ActionSuccess | Select-Object name,count
+
+    # return results for further processing
+    return $psobjBulkAddResults
 }
