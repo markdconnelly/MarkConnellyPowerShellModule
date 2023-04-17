@@ -1,8 +1,8 @@
 <#
 .SYNOPSIS
-    This function is used to define flagged graph api permissions.
+    This function is used to define flagged Azure AD roles.
 .DESCRIPTION
-    Produces an array of flagged graph permissions to be in used in comparison operations.
+    Produces an array of flagged Azure AD roles to be in used in comparison operations.
 .NOTES
     This is a custom function written by Mark Connelly, so it may not work as intended.
 .LINK
@@ -13,8 +13,17 @@
 
 Function Get-FlaggedAzureADRoleArray {
     [CmdletBinding()]
-    Param ()
+    Param (
+        [Parameter(Mandatory=$false,Position=0)]
+        [string]$ExportPath
+    )
 
+    # Define the array of flagged Azure AD roles
     $arrFlaggedAzureADRoles = Get-MgDirectoryRole | Where-Object {$_.DisplayName -like "*Administrator*"} | Select-Object Id, DisplayName, Description
+
+    # Export the array of applications to a csv file if an export path is provided
+    if($ExportPath){
+        Out-MDCToCSV -psobj $arrFlaggedAzureADRoles -ExportPath $ExportPath -FileName "GraphAPI_FlaggedPermissionArray"
+    }
     return $arrFlaggedAzureADRoles
 }
