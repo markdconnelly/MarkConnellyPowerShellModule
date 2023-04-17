@@ -9,6 +9,7 @@
   <Outputs if any, otherwise state None - example: Log file stored in C:\Windows\Temp\<name>.log>
 .NOTES
   Version:        1.0
+  Last Updated:   <Date>
   Author:         <Name>
   Creation Date:  <Date>
   Purpose/Change: Initial script development
