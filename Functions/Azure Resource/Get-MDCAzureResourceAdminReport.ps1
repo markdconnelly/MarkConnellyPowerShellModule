@@ -9,12 +9,11 @@
 .LINK
     https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/AzureAD/ConditionalAccess/Get-MDCConditionalAccessExecutiveSummary.ps1
 .EXAMPLE
-    Get-MDCConditionalAccessExecutiveSummary
-    Get-MDCConditionalAccessExecutiveSummary -ProductionEnvironment $true
-    Get-MDCConditionalAccessExecutiveSummary -ExportPath "C:\Temp\"
-    Get-MDCConditionalAccessExecutiveSummary -ProductionEnvironment $true -ExportPath "C:\Temp\"
+    Get-MDCAzureResourceAdminReport
+    Get-MDCAzureResourceAdminReport -ExportPath "C:\Temp\"
 #>
-Function Set-MDCGraphProfile {
+
+Function Get-MDCAzureResourceAdminReport {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory=$false,Position=0)]
@@ -29,4 +28,6 @@ Function Set-MDCGraphProfile {
     #
     #
     #
+
+    return $psobjAzureResourceAdminReport
 }
