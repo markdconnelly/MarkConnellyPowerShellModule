@@ -29,7 +29,7 @@ Function Connect-MDCAzApplication {
         [bool]$ProductionEnvironment = $false
     )
 
-    # Function code goes here
+    # Check if you should connect to the production environment or the development environment. Set secret variables appropriately.
     $strClientID = ""
     $strTenantID = ""
     $strClientSecret = ""
@@ -49,7 +49,7 @@ Function Connect-MDCAzApplication {
     Write-Verbose "Client ID: $strClientID"
     Write-Verbose "Tenant ID: $strTenantID"
 
-    # Connect to Azure Resources
+    # Connect to Azure Resource Manager
     Write-Verbose "Securing client secret"
     $strClientSecretSecured = ""
     $strClientSecretSecured = ConvertTo-SecureString $strClientSecret -AsPlainText -Force
