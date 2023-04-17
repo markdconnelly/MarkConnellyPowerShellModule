@@ -6,9 +6,15 @@
 .NOTES
     This is a custom function written by Mark Connelly, so it may not work as intended.
 .LINK
-    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/Utility/Connect-MDCGraphApplication.ps1
+    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/Utility/Get-FlaggedAzureADRoleArray.ps1
 .EXAMPLE
-    Connect-MDCGraphApplication 
-    Connect-MDCGraphApplication -ProductionEnvironment $false
-    Connect-MDCGraphApplication -ProductionEnvironment $true
+    $variable = Get-FlaggedAzureADRoleArray
 #>
+
+Function Get-FlaggedAzureADRoleArray {
+    [CmdletBinding()]
+    Param ()
+
+    $arrFlaggedAzureADRoles = Get-MgDirectoryRole | Where-Object {$_.DisplayName -like "*Administrator*"} | Select-Object Id, DisplayName, Description
+    return $arrFlaggedAzureADRoles
+}
