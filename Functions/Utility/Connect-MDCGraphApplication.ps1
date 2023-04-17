@@ -20,6 +20,9 @@ Function Connect-MDCGraphApplication {
         [Parameter(Mandatory=$false,Position=0)]
         [bool]$ProductionEnvironment = $false
     )
+    $strClientID = ""
+    $strTenantID = ""
+    $strClientSecret = ""
     if($ProductionEnvironment -eq $true){
         Write-Verbose "Connecting to Production Environment"
         $strClientID = Get-Secret -Name PrdPSAppID -AsPlainText
@@ -27,6 +30,7 @@ Function Connect-MDCGraphApplication {
         $strClientSecret = Get-Secret -Name PrdPSAppSecret -AsPlainText
     }
     else {
+
         Write-Verbose "Connecting to Development Environment"
         $strClientID = Get-Secret -Name DevPSAppID -AsPlainText
         $strTenantID = Get-Secret -Name DevPSAppTenantID -AsPlainText
