@@ -1,4 +1,4 @@
-<#
+<# 
 .SYNOPSIS
     This function is used to define flagged graph api permissions.
 .DESCRIPTION
