@@ -15,9 +15,7 @@
     Creation Date:  <Date>
     Purpose/Change: Initial script development
 .LINK
-    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/Utility/Connect-MDCGraphApplication.ps1
+    <Link to any relevant documentation>
 .EXAMPLE
-    Connect-MDCGraphApplication 
-    Connect-MDCGraphApplication -ProductionEnvironment $false
-    Connect-MDCGraphApplication -ProductionEnvironment $true
+    Get-ExampleFunction -ExampleParameter "Example" -ExampleParameter2 "Example2" 
 #>
