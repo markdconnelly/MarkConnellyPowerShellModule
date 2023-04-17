@@ -24,11 +24,18 @@ Function Get-ExampleFunction {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory=$true,Position=0)]
-        [string]$Variable = $false
+        [string]$Variable1,
+        [Parameter(Mandatory=$false,Position=1)]
+        [string]$Variable2 = "Default Value"
     )
 
     # Function code goes here
+    if($Variable1){
+        Write-Host "Has input"
+    } else {
+        Write-Host "Is null"
+    }
 
     # Return statement goes here
-    return $Variable
+    return $Variable2
 }

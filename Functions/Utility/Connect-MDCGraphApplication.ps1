@@ -2,10 +2,18 @@
 .SYNOPSIS
     This function will connect to the graph api as an application service principal that is pre-defined.
 .DESCRIPTION
-    Quick connect function to refresh graph api connection.
+    Quick connect function to refresh graph api connection. If the ProductionEnvironment parameter is not specified, the function will default to the development environment.
+.INPUTS
+  -ProductionEnvironment: This is a boolean value that will determine which environment to connect to. If not specified, the function will default to the development environment.
+.OUTPUTS
+  None
 .NOTES
     This is a custom function written by Mark Connelly, so it may not work as intended.
-    This function assumes a secret store with the appropriate variables is in place. If it is not, the function will fail.
+    Version:        1.0
+    Author:         Mark D. Connelly Jr.
+    Last Updated:   4-17-2023
+    Creation Date:  4-16-2023
+    Purpose/Change: Initial script development
 .LINK
     https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/Utility/Connect-MDCGraphApplication.ps1
 .EXAMPLE

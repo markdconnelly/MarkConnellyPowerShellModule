@@ -1,8 +1,8 @@
 <#
 .SYNOPSIS
-    <Quick overview of the function>
+    This function will connect to the Azure Resource Manager as an application service principal that is pre-defined.
 .DESCRIPTION
-    <More detailed description of the function>
+    Quick connect function to refresh graph api connection. If the ProductionEnvironment parameter is not specified, the function will default to the development environment.
 .INPUTS
   <Inputs if any, otherwise state None>
 .OUTPUTS
@@ -10,25 +10,52 @@
 .NOTES
     This is a custom function written by Mark Connelly, so it may not work as intended.
     Version:        1.0
-    Author:         <Name>
-    Last Updated:   <Date>
-    Creation Date:  <Date>
+    Author:         Mark D. Connelly Jr.
+    Last Updated:   4-17-2023
+    Creation Date:  4-17-2023
     Purpose/Change: Initial script development
 .LINK
-    <Link to any relevant documentation>
+    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/Utility/Connect-MDCAzApplication.ps1
 .EXAMPLE
-    Get-ExampleFunction -ExampleParameter "Example" -ExampleParameter2 "Example2" 
+    Connect-MDCAzApplication
+    Connect-MDCAzApplication -ProductionEnvironment $false  
+    Connect-MDCAzApplication -ProductionEnvironment $true
 #>
 
-Function Get-ExampleFunction {
+Function Connect-MDCAzApplication {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory=$true,Position=0)]
-        [string]$Variable = $false
+        [bool]$ProductionEnvironment = $false
     )
 
     # Function code goes here
+    $strClientID = ""
+    $strTenantID = ""
+    $strClientSecret = ""
+    if($ProductionEnvironment -eq $true){
+        Write-Verbose "Connecting to Production Environment"
+        $strClientID = Get-Secret -Name PrdPSAppID -AsPlainText
+        $strTenantID = Get-Secret -Name PrdPSAppTenantID -AsPlainText
+        $strClientSecret = Get-Secret -Name PrdPSAppSecret -AsPlainText
+    }
+    else {
 
-    # Return statement goes here
-    return $Variable
+        Write-Verbose "Connecting to Development Environment"
+        $strClientID = Get-Secret -Name DevPSAppID -AsPlainText
+        $strTenantID = Get-Secret -Name DevPSAppTenantID -AsPlainText
+        $strClientSecret = Get-Secret -Name DevPSAppSecret -AsPlainText
+    }
+    Write-Verbose "Client ID: $strClientID"
+    Write-Verbose "Tenant ID: $strTenantID"
+
+    # Connect to Azure Resources
+    Write-Verbose "Securing client secret"
+    $strClientSecretSecured = ""
+    $strClientSecretSecured = ConvertTo-SecureString $strClientSecret -AsPlainText -Force
+    Write-Verbose "Creating service principal credential object"
+    $objServicePrincipalCredential = ""
+    $objServicePrincipalCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $strClientID, $strClientSecretSecured
+    Write-Verbose "Connecting to the Azure Resource Manager"
+    Connect-AzAccount -ServicePrincipal -Credential $objServicePrincipalCredential -Tenant $strTenantID
 }
