@@ -105,9 +105,12 @@ Function Get-MDCResolveADUsers {
                 $UserID = $user.UserID
                 $Filter = "$SearchBy -like '$UserID'"
                 $arrGetADUser = Get-ADUser -Filter $Filter -Properties * -ErrorAction Stop
+
+                # If the user was resolved, but no data was pulled, then throw an error
                 if($null -eq $arrGetADUser.UserPrincipalName){
                     Write-Error -Message "User resolved with no data pulled." -ErrorAction Stop
                 }
+
                 Write-Verbose "Resolved $($user.UserID) to $($arrGetADUser.SamAccountName)"
                 $psobjResolvedUsersAD += [PSCustomObject]@{
                     UserPrincipalName = $arrGetADUser.UserPrincipalName
@@ -152,5 +155,5 @@ Function Get-MDCResolveADUsers {
     }
 
     # Return the array of resolved users and their properties. Failures will be noted in the OperationStatus and Error properties.
-    return $psobjResolvedUsersAD
+    return $psobjResolvedUsersAD | Format-Table -AutoSize | Sort-Object -Property OperationStatus, UserPrincipalName
 }
