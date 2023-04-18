@@ -109,7 +109,7 @@ Function Get-MDCResolveADUsers {
 
             # Try to resolve the user against Active Directory
             try{
-                $arrGetADUser = Get-ADUser -Filter '$($SearchBy) -like $($user.UserID)' -Properties * -ErrorAction Stop
+                $arrGetADUser = Get-ADUser -Filter "$SearchBy -like '$user'" -Properties * -ErrorAction Stop
                 Write-Verbose "Resolved $($user.UserID) to $($arrGetADUser.SamAccountName)"
                 $psobjResolvedUsersAD += [PSCustomObject]@{
                     UserPrincipalName = $user.UserPrincipalName
