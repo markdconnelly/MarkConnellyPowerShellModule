@@ -2,6 +2,9 @@
 This repo contains the PowerShell module owned and maintained by Mark D. Connelly Jr.  
 This module contains a number of functions and scripts that are used to perform various tasks in the Microsoft 365 and Azure environments.
 
+# Module Roadmap
+https://github.com/users/markdconnelly/projects/1/views/1
+
 ## Getting Started
 To get started, clone this repository to your local machine.  You can identify which directories are available by checking the following variable in your editor of choice:
 ```$env:PSModulePath```
