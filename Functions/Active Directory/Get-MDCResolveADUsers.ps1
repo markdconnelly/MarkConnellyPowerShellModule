@@ -20,10 +20,10 @@
 .LINK
     https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/Active%20Directory/Get-MDCResolvedADUsers.ps1
 .EXAMPLE
-    Get-MDCResolvedADUsers -UserArray $users -ExportPath "C:\Temp\ResolvedUsers.csv"" 
+    Get-MDCResolveADUsers -UserArray $users -ExportPath "C:\Temp\ResolvedUsers.csv"" 
 #>
 
-Function Get-MDCResolvedADUsers {
+Function Get-MDCResolveADUsers {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory=$true,Position=0)]
