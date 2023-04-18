@@ -46,6 +46,7 @@ Function Get-MDCResolveADUsers {
     $psobjResolvedUsersAD = @()
 
     # If the search by parameter is SamAccountName, DN, GUID, or SID, then we can use the -Identity parameter of Get-ADUser
+    $user = $null
     if($SearchBy -eq "SamAccountName" -or $SearchBy -eq "DN" -or $SearchBy -eq "GUID" -or $SearchBy -eq "SID"){
 
         # Loop through all of the users in the input array and try to resolve them against Active Directory
@@ -58,18 +59,17 @@ Function Get-MDCResolveADUsers {
                 $arrGetADUser = Get-ADUser -Identity $user.UserID -Properties * -ErrorAction Stop
                 Write-Verbose "Resolved $($user.UserID) to $($arrGetADUser.SamAccountName)"
                 $psobjResolvedUsersAD += [PSCustomObject]@{
-                    UserPrincipalName = $user.UserPrincipalName
-                    SamAccountName = $user.SamAccountName
-                    EmailAddress = $user.mail
-                    EmployeeID = $user.EmployeeID
-                    GUID = $user.ObjectGUID
-                    SID = $user.SID
-                    Description = $user.Description
-					Organization = $user.extensionAttribute12
-                    Company = $user.Company
-                    Department = $user.Department
-                    Title = $user.Title
-                    Created = $user.Created
+                    UserPrincipalName = $arrGetADUser.UserPrincipalName
+                    SamAccountName = $arrGetADUser.SamAccountName
+                    EmailAddress = $arrGetADUser.mail
+                    EmployeeID = $arrGetADUser.EmployeeID 
+                    SID = $arrGetADUser.SID
+                    Description = $arrGetADUser.Description
+					Organization = $arrGetADUser.extensionAttribute12
+                    Company = $arrGetADUser.Company
+                    Department = $arrGetADUser.Department
+                    Title = $arrGetADUser.Title
+                    Created = $arrGetADUser.Created
                     OperationStatus = "Success"
                     Error = "N/A"
                 }
@@ -81,7 +81,6 @@ Function Get-MDCResolveADUsers {
                     SamAccountName = "N/A"
                     EmailAddress = "N/A"
                     EmployeeID = "N/A"
-                    GUID = "N/A"
                     SID = "N/A"
                     Description = "N/A"
 					Organization = "N/A"
@@ -106,20 +105,22 @@ Function Get-MDCResolveADUsers {
                 $UserID = $user.UserID
                 $Filter = "$SearchBy -like '$UserID'"
                 $arrGetADUser = Get-ADUser -Filter $Filter -Properties * -ErrorAction Stop
+                if($null -eq $arrGetADUser.UserPrincipalName){
+                    Write-Error -Message "User resolved with no data pulled." -ErrorAction Stop
+                }
                 Write-Verbose "Resolved $($user.UserID) to $($arrGetADUser.SamAccountName)"
                 $psobjResolvedUsersAD += [PSCustomObject]@{
-                    UserPrincipalName = $user.UserPrincipalName
-                    SamAccountName = $user.SamAccountName
-                    EmailAddress = $user.mail
-                    EmployeeID = $user.EmployeeID
-                    GUID = $user.ObjectGUID
-                    SID = $user.SID
-                    Description = $user.Description
-					Organization = $user.extensionAttribute12
-                    Company = $user.Company
-                    Department = $user.Department
-                    Title = $user.Title
-                    Created = $user.Created
+                    UserPrincipalName = $arrGetADUser.UserPrincipalName
+                    SamAccountName = $arrGetADUser.SamAccountName
+                    EmailAddress = $arrGetADUser.mail
+                    EmployeeID = $arrGetADUser.EmployeeID 
+                    SID = $arrGetADUser.SID
+                    Description = $arrGetADUser.Description
+					Organization = $arrGetADUser.extensionAttribute12
+                    Company = $arrGetADUser.Company
+                    Department = $arrGetADUser.Department
+                    Title = $arrGetADUser.Title
+                    Created = $arrGetADUser.Created
                     OperationStatus = "Success"
                     Error = "N/A"
                 }
@@ -131,7 +132,6 @@ Function Get-MDCResolveADUsers {
                     SamAccountName = "N/A"
                     EmailAddress = "N/A"
                     EmployeeID = "N/A"
-                    GUID = "N/A"
                     SID = "N/A"
                     Description = "N/A"
 					Organization = "N/A"
