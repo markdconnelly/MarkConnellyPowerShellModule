@@ -109,6 +109,7 @@ Function Get-MDCAzureADAdminReport {
         Write-Verbose "Exporting AAD Admin Report to $ExportPath"
         Out-MDCToCSV -PSObj $psobjRoles -ExportPath $ExportPath -FileName "AADAdminReport"
     }
+    Disconnect-Graph
     return $psobjRoles
 }#End Function Get-GetAzureADAdministrators
 
