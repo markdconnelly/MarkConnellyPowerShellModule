@@ -14,7 +14,7 @@
     Get-MDCConditionalAccessExecutiveSummary -ExportPath "C:\Temp\"
     Get-MDCConditionalAccessExecutiveSummary -ProductionEnvironment $true -ExportPath "C:\Temp\"
 #>
-Function Set-MDCGraphProfile {
+Function Get-MDCConditionalAccessExecutiveSummary {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory=$false,Position=0)]
