@@ -2,7 +2,7 @@
 .SYNOPSIS
     This function will produce a psobject with admins and their various permissions. If an export path parameter is provided, the function will export the results to a csv file.
 .DESCRIPTION
-    Identifying excessive admin permissions is the goal. This report will provide the information that you need to identify and remediate excessive permissions.
+    Identifying excessive admin permissions is the goal. This report will provide the information that you need to identify and remediate excessive permissions in Azure AD.
 .NOTES
     This is a custom function written by Mark Connelly, so it may not work as intended.
     This function assumes a secret store with the appropriate variables is in place. If it is not, the function will fail.
