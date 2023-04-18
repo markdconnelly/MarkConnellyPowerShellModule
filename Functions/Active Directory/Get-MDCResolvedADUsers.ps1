@@ -27,7 +27,7 @@ Function Get-MDCResolvedADUsers {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory=$true,Position=0)]
-        [string]$UserArray,
+        [array]$UserArray,
         [Parameter(Mandatory=$false,Position=1)]
         [string]$ExportPath
     )
