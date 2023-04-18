@@ -59,20 +59,17 @@ Function Get-MDCResolveADUsers {
                 Write-Verbose "Resolved $($user.UserID) to $($arrGetADUser.SamAccountName)"
                 $psobjResolvedUsersAD += [PSCustomObject]@{
                     UserPrincipalName = $user.UserPrincipalName
-                    GUID = $user.ObjectGUID
                     SamAccountName = $user.SamAccountName
-                    SID = $user.SID
-                    City = $user.City
-                    Company = $user.Company
-                    Country = $user.Country
-                    Created = $user.Created
-                    Department = $user.Department
-                    Description = $user.Description
                     EmailAddress = $user.mail
                     EmployeeID = $user.EmployeeID
-                    State = $user.State
-                    StreetAddress = $user.StreetAddress
+                    GUID = $user.ObjectGUID
+                    SID = $user.SID
+                    Description = $user.Description
+					Organization = $user.extensionAttribute12
+                    Company = $user.Company
+                    Department = $user.Department
                     Title = $user.Title
+                    Created = $user.Created
                     OperationStatus = "Success"
                     Error = "N/A"
                 }
@@ -80,21 +77,18 @@ Function Get-MDCResolveADUsers {
                 Write-Verbose "Unable to resolve $($user.UserID)"
                 $objError = $Error[0].Exception.Message
                 $psobjResolvedUsersAD += [PSCustomObject]@{
-                    UserPrincipalName = $user.UserID
-                    GUID = "N/A"
+					UserPrincipalName = $user.UserID
                     SamAccountName = "N/A"
-                    SID = "N/A"
-                    City = "N/A"
-                    Company = "N/A"
-                    Country = "N/A"
-                    Created = "N/A"
-                    Department = "N/A"
-                    Description = "N/A"
                     EmailAddress = "N/A"
                     EmployeeID = "N/A"
-                    State = "N/A"
-                    StreetAddress = "N/A"
+                    GUID = "N/A"
+                    SID = "N/A"
+                    Description = "N/A"
+					Organization = "N/A"
+                    Company = "N/A"
+                    Department = "N/A"
                     Title = "N/A"
+                    Created = "N/A"
                     OperationStatus = "Failure"
                     Error = $objError
                 }
@@ -109,24 +103,23 @@ Function Get-MDCResolveADUsers {
 
             # Try to resolve the user against Active Directory
             try{
-                $arrGetADUser = Get-ADUser -Filter "$SearchBy -like '$user'" -Properties * -ErrorAction Stop
+                $UserID = $user.UserID
+                $Filter = "$SearchBy -like '$UserID'"
+                $arrGetADUser = Get-ADUser -Filter $Filter -Properties * -ErrorAction Stop
                 Write-Verbose "Resolved $($user.UserID) to $($arrGetADUser.SamAccountName)"
                 $psobjResolvedUsersAD += [PSCustomObject]@{
                     UserPrincipalName = $user.UserPrincipalName
-                    GUID = $user.ObjectGUID
                     SamAccountName = $user.SamAccountName
-                    SID = $user.SID
-                    City = $user.City
-                    Company = $user.Company
-                    Country = $user.Country
-                    Created = $user.Created
-                    Department = $user.Department
-                    Description = $user.Description
                     EmailAddress = $user.mail
                     EmployeeID = $user.EmployeeID
-                    State = $user.State
-                    StreetAddress = $user.StreetAddress
+                    GUID = $user.ObjectGUID
+                    SID = $user.SID
+                    Description = $user.Description
+					Organization = $user.extensionAttribute12
+                    Company = $user.Company
+                    Department = $user.Department
                     Title = $user.Title
+                    Created = $user.Created
                     OperationStatus = "Success"
                     Error = "N/A"
                 }
@@ -134,21 +127,18 @@ Function Get-MDCResolveADUsers {
                 Write-Verbose "Unable to resolve $($user.UserID)"
                 $objError = $Error[0].Exception.Message
                 $psobjResolvedUsersAD += [PSCustomObject]@{
-                    UserPrincipalName = $user.UserID
-                    GUID = "N/A"
+					UserPrincipalName = $user.UserID
                     SamAccountName = "N/A"
-                    SID = "N/A"
-                    City = "N/A"
-                    Company = "N/A"
-                    Country = "N/A"
-                    Created = "N/A"
-                    Department = "N/A"
-                    Description = "N/A"
                     EmailAddress = "N/A"
                     EmployeeID = "N/A"
-                    State = "N/A"
-                    StreetAddress = "N/A"
+                    GUID = "N/A"
+                    SID = "N/A"
+                    Description = "N/A"
+					Organization = "N/A"
+                    Company = "N/A"
+                    Department = "N/A"
                     Title = "N/A"
+                    Created = "N/A"
                     OperationStatus = "Failure"
                     Error = $objError
                 }
