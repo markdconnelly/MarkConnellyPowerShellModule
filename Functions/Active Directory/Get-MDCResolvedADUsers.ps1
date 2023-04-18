@@ -18,7 +18,7 @@
     Creation Date:  4-18-2023
     Purpose/Change: Initial script development
 .LINK
-    <Link to any relevant documentation>
+    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/Active%20Directory/Get-MDCResolvedADUsers.ps1
 .EXAMPLE
     Get-MDCResolvedADUsers -UserArray $users -ExportPath "C:\Temp\ResolvedUsers.csv"" 
 #>
@@ -31,14 +31,64 @@ Function Get-MDCResolvedADUsers {
         [Parameter(Mandatory=$false,Position=1)]
         [string]$ExportPath
     )
+    $psobjResolvedUsersAD = @()
 
-    # Function code goes here
-    if($Variable1){
-        Write-Host "Has input"
-    } else {
-        Write-Host "Is null"
+    # Loop through all of the users in the input array and try to resolve them against Active Directory
+    foreach($user in $UserArray){
+        $objError = ""
+        $arrGetADUser = @()
+        try{
+            $arrGetADUser = Get-ADUser -Identity $user.UserID -Properties * -ErrorAction Stop
+            Write-Verbose "Resolved $($user.UserID) to $($arrGetADUser.SamAccountName)"
+            $psobjResolvedUsersAD += [PSCustomObject]@{
+                UserPrincipalName = $user.UserPrincipalName
+                GUID = $user.ObjectGUID
+                SamAccountName = $user.SamAccountName
+                SID = $user.SID
+                City = $user.City
+                Company = $user.Company
+                Country = $user.Country
+                Created = $user.Created
+                Department = $user.Department
+                Description = $user.Description
+                EmailAddress = $user.mail
+                EmployeeID = $user.EmployeeID
+                State = $user.State
+                StreetAddress = $user.StreetAddress
+                Title = $user.Title
+                OperationStatus = "Success"
+                Error = "N/A"
+            }
+        }catch{
+            Write-Verbose "Unable to resolve $($user.UserID)"
+            $objError = $Error[0].Exception.Message
+            $psobjResolvedUsersAD += [PSCustomObject]@{
+                UserPrincipalName = $user.UserID
+                GUID = "N/A"
+                SamAccountName = "N/A"
+                SID = "N/A"
+                City = "N/A"
+                Company = "N/A"
+                Country = "N/A"
+                Created = "N/A"
+                Department = "N/A"
+                Description = "N/A"
+                EmailAddress = "N/A"
+                EmployeeID = "N/A"
+                State = "N/A"
+                StreetAddress = "N/A"
+                Title = "N/A"
+                OperationStatus = "Failure"
+                Error = $objError
+            }
+        }
     }
 
-    # Return statement goes here
-    return $Variable2
+    # Export results to CSV if the export path is provided
+    if($ExportPath -ne $null){
+        Out-MDCToCSV -PSObj $psobjResolvedUsersAD -FileName "AD_ResolutionCheck" -ExportPath $ExportPath 
+    }
+
+    # Return the array of resolved users and their properties. Failures will be noted in the OperationStatus and Error properties.
+    return $psobjResolvedUsersAD
 }
