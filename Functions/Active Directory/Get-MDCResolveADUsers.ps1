@@ -24,7 +24,12 @@
 .LINK
     https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/Active%20Directory/Get-MDCResolveADUsers.ps1
 .EXAMPLE
-    Get-MDCResolveADUsers -UserArray $users -ExportPath "C:\Temp\" 
+    Get-MDCResolveADUsers -UserArray $users -SearchBy "UserPrincipalName" -ExportPath "C:\Temp\" 
+    Get-MDCResolveADUsers -UserArray $users -SearchBy "SamAccountName"
+    Get-MDCResolveADUsers -UserArray $users -SearchBy "EmailAddress"
+    Get-MDCResolveADUsers -UserArray $users -SearchBy "EmployeeID"
+    Get-MDCResolveADUsers -UserArray $users -SearchBy "GUID"
+    Get-MDCResolveADUsers -UserArray $users -SearchBy "SID" -ExportPath "C:\Temp\"
 #>
 
 Function Get-MDCResolveADUsers {
