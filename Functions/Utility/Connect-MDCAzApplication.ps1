@@ -33,6 +33,7 @@ Function Connect-MDCAzApplication {
     $strClientID = ""
     $strTenantID = ""
     $strClientSecret = ""
+    Disconnect-AzAccount -Force
     if($ProductionEnvironment -eq $true){
         Write-Verbose "Connecting to Production Environment"
         $strClientID = Get-Secret -Name PrdPSAppID -AsPlainText
@@ -58,4 +59,5 @@ Function Connect-MDCAzApplication {
     $objServicePrincipalCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $strClientID, $strClientSecretSecured
     Write-Verbose "Connecting to the Azure Resource Manager"
     Connect-AzAccount -ServicePrincipal -Credential $objServicePrincipalCredential -Tenant $strTenantID
+    Get-AzContext
 }
