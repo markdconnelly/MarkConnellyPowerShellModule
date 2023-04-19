@@ -46,6 +46,8 @@ Function Get-MDCAzureResourceAdminReport {
         throw "Unable to connect to the Microsoft Graph API - $($Error[0].Exception.Message)"
     }#endregion
 
+    $psobjRoles = @() # remove after testing/debugging
+
     #region Collect Azure Role Assignments at the Management Group Scope
     $arrAzureManagementGroups = @()
 
@@ -86,7 +88,6 @@ Function Get-MDCAzureResourceAdminReport {
                             MemberUpn = $groupMember.AdditionalProperties.userPrincipalName
                             MemberObjId = $roleAssignment.ObjectId
                         }
-                        $pause = ""
                     }
                 }
                 catch {
@@ -106,7 +107,6 @@ Function Get-MDCAzureResourceAdminReport {
                     MemberUpn = $roleAssignment.SignInName
                     MemberObjId = $roleAssignment.ObjectId
                 }
-                $pause = ""
             }
         }
     }#endregion
@@ -156,7 +156,6 @@ Function Get-MDCAzureResourceAdminReport {
                             MemberUpn = $groupMember.AdditionalProperties.userPrincipalName
                             MemberObjId = $roleAssignment.ObjectId
                         }
-                        $pause = ""
                     }
                 }
                 Catch{
@@ -178,7 +177,6 @@ Function Get-MDCAzureResourceAdminReport {
                 }
             }
         }
-        $intProgress++
     }#endregion
 
     #region Collect Azure Role Assignments at the Resource Group Scope
@@ -217,7 +215,6 @@ Function Get-MDCAzureResourceAdminReport {
                             MemberUpn = $groupMember.AdditionalProperties.userPrincipalName
                             MemberObjId = $roleAssignment.ObjectId
                         }
-                        $pause = ""
                     }
                 }
                 catch {
@@ -239,7 +236,6 @@ Function Get-MDCAzureResourceAdminReport {
                 }
             }
         }
-        $intProgress++
     }#endregion
 
     #region Collect Azure Role Assignments at the Resource Scope
@@ -278,7 +274,6 @@ Function Get-MDCAzureResourceAdminReport {
                             MemberUpn = $groupMember.AdditionalProperties.userPrincipalName
                             MemberObjId = $roleAssignment.ObjectId
                         }
-                        $pause = ""
                     }
                 }catch{
                     #catch: Get-MgGroupMember
@@ -299,11 +294,8 @@ Function Get-MDCAzureResourceAdminReport {
                 }
             }
         }
-        $intProgress++
     }#endregion
 
     # Return the array of permissions and details
-    return $psobjAzureResourceAdminReport
+    return $psobjAzureResourceAdminReport | Format-Table -AutoSize
 }
-
-#Get-MDCAzureResourceAdminReport -ProductionEnvironment $true -Verbose
