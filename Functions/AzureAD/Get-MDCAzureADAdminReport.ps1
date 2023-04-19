@@ -9,7 +9,7 @@
     Author:         Mark D. Connelly Jr.
     Last Updated:   04-19-2023 - Mark Connelly
     Creation Date:  04-16-2023
-    Purpose/Change: Initial script development
+    Purpose/Change: Cleaning structure and adding verbose error handling to the function.
 .LINK
     https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/AzureAD/Get-MDCAzureADAdminReport.ps1
 .EXAMPLE
