@@ -33,7 +33,7 @@ Function Connect-MDCAzApplication {
     $strClientID = ""
     $strTenantID = ""
     $strClientSecret = ""
-    Disconnect-AzAccount -Force
+    Disconnect-AzAccount
     if($ProductionEnvironment -eq $true){
         Write-Verbose "Connecting to Production Environment"
         $strClientID = Get-Secret -Name PrdPSAppID -AsPlainText
@@ -65,3 +65,4 @@ Function Connect-MDCAzApplication {
         throw $error[0].Exception.Message
     }
 }
+Connect-MDCAzApplication

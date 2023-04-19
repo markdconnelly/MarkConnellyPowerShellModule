@@ -30,6 +30,7 @@ Function Get-MDCAzureResourceAdminReport {
     try {
         Write-Verbose "Connecting to the Azure Resource Manager"
         Connect-MDCAzApplication -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop
+        Get-AzContext
     }
     catch {
         Write-Verbose "Unable to connect to the Azure Resource Manager"
@@ -95,6 +96,7 @@ Function Get-MDCAzureResourceAdminReport {
                     MemberUpn = $roleAssignment.SignInName
                     MemberObjId = $roleAssignment.ObjectId
                 }
+                $pause = ""
             }
         }
     }#endregion
