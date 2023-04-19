@@ -7,8 +7,9 @@
     This is a custom function written by Mark Connelly, so it may not work as intended.
     Version:        1.0
     Author:         Mark D. Connelly Jr.
+    Last Updated:   04-19-2023 - Mark Connelly
     Creation Date:  04-18-2023
-    Purpose/Change: Initial script development
+    Purpose/Change: Cleaning structure and adding verbose error handling to the function.
 .LINK
     https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/AzureAD/ConditionalAccess/Get-MDCConditionalAccessExecutiveSummary.ps1
 .EXAMPLE
@@ -35,7 +36,9 @@ Function Get-MDCAzureResourceAdminReport {
         Write-Verbose "Connected to the Azure Resource Manager"
     }
     catch {
-        Write-Verbose "Unable to connect to the Azure Resource Manager - $($Error[0].Exception.Message)"
+        $objError = $Error[0].Exception.Message
+        Write-Host "Unable to connect to the Azure Resource Manager" -BackgroundColor Black -ForegroundColor Red
+        Write-Host $objError -BackgroundColor Black -ForegroundColor Red
         return
     }
 
@@ -46,7 +49,9 @@ Function Get-MDCAzureResourceAdminReport {
         Write-Verbose "Connected to the Microsoft Graph API"
     }
     catch {
-        Write-Verbose "Unable to connect to the Microsoft Graph API - $($Error[0].Exception.Message)"
+        $objError = $Error[0].Exception.Message
+        Write-Host "Unable to connect to the Microsoft Graph API" -BackgroundColor Black -ForegroundColor Red
+        Write-Host $objError -BackgroundColor Black -ForegroundColor Red
         return
     }#endregion
 
@@ -59,7 +64,7 @@ Function Get-MDCAzureResourceAdminReport {
         Write-Verbose "Management groups collected"
     }
     catch {
-        Write-Verbose "Unable to retrieve Azure Management Groups. If there are no management groups, this is not an error."
+        Write-Host "Unable to retrieve Azure Management Groups. If there are no management groups, this is not an error." -BackgroundColor Black -ForegroundColor Yellow
     }
     
     # Loop through each management group and collect role assignments
@@ -98,8 +103,8 @@ Function Get-MDCAzureResourceAdminReport {
                 catch {
                     #catch: Get-MgGroupMember
                     $objError = $Error[0].Exception.Message
-                    Write-Verbose "Unable to get members of group $($roleAssignment.DisplayName)"
-                    Write-Verbose $objError
+                    Write-Host "Unable to get members of group $($roleAssignment.DisplayName)" -BackgroundColor Black -ForegroundColor Red
+                    Write-Host $objError -BackgroundColor Black -ForegroundColor Red
                 }
             }else{ #If role assignment is a user, proceed as normal
                 Write-Verbose "Standard user assignment. Creating entry for $($roleAssignment.DisplayName)"
@@ -129,8 +134,8 @@ Function Get-MDCAzureResourceAdminReport {
     }
     catch {
         $objError = $Error[0].Exception.Message
-        Write-Verbose $objError
-        Write-Host "Unable to retrieve Azure Subscriptions. Stopping..."
+        Write-Host "Unable to retrieve Azure Subscriptions. Stopping..." -BackgroundColor Black -ForegroundColor Red
+        Write-Host $objError -BackgroundColor Black -ForegroundColor Red
         return
     }
 
@@ -175,8 +180,8 @@ Function Get-MDCAzureResourceAdminReport {
                 Catch{
                     #catch: Get-MgGroupMember
                     $objError = $Error[0].Exception.Message
-                    Write-Verbose "Unable to get members of group $($roleAssignment.DisplayName)"
-                    Write-Verbose $objError
+                    Write-Host "Unable to get members of group $($roleAssignment.DisplayName)" -BackgroundColor Black -ForegroundColor Red
+                    Write-Host $objError -BackgroundColor Black -ForegroundColor Red
                 }
             }else{ #If role assignment is a user, proceed as normal
                 Write-Verbose "Standard user assignment. Creating entry for $($roleAssignment.DisplayName)"
@@ -242,8 +247,8 @@ Function Get-MDCAzureResourceAdminReport {
                 catch {
                     #catch: Get-MgGroupMember
                     $objError = $Error[0].Exception.Message
-                    Write-Verbose "Unable to get members of group $($roleAssignment.DisplayName)"
-                    Write-Verbose $objError
+                    Write-Host "Unable to get members of group $($roleAssignment.DisplayName)" -BackgroundColor Black -ForegroundColor Red
+                    Write-Host $objError -BackgroundColor Black -ForegroundColor Red
                 }
             }else{ #If role assignment is a user, proceed as normal
                 Write-Verbose "Standard user assignment. Creating entry for $($roleAssignment.DisplayName)"
@@ -308,8 +313,8 @@ Function Get-MDCAzureResourceAdminReport {
                 }catch{
                     #catch: Get-MgGroupMember
                     $objError = $Error[0].Exception.Message
-                    Write-Verbose "Unable to get members of group $($roleAssignment.DisplayName)"
-                    Write-Verbose $objError
+                    Write-Host "Unable to get members of group $($roleAssignment.DisplayName)" -BackgroundColor Black -ForegroundColor Red
+                    Write-Host $objError
                 }
             }else{ #If role assignment is a user, proceed as normal
                 Write-Verbose "Standard user assignment. Creating entry for $($roleAssignment.DisplayName)"
@@ -339,8 +344,8 @@ Function Get-MDCAzureResourceAdminReport {
         }
         catch {
             $objError = $Error[0].Exception.Message
-            Write-Verbose "Unable to export Azure Resource Admin Report to $ExportPath"
-            Write-Verbose $objError
+            Write-Host "Unable to export Azure Resource Admin Report to $ExportPath" -BackgroundColor Black -ForegroundColor Red
+            Write-Host $objError -BackgroundColor Black -ForegroundColor Red
         }
         
     }
