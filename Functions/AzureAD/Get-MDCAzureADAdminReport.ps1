@@ -28,11 +28,12 @@ Function Get-MDCAzureADAdminReport {
     # Connect to the Microsoft Graph API
     try {
         Write-Verbose "Connecting to Graph"
-        Connect-MDCGraphApplication -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop
+        Connect-MDCGraphApplication -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop | Out-Null
+        Write-Verbose "Connected to Graph"
     }
     catch {
-        Write-Verbose "Unable to connect to Graph"
-        throw "Unable to connect to Graph"
+        Write-Host "Unable to connect to Graph" -BackgroundColor Black -ForegroundColor Red
+        return
     }
     
     # Collect an array of all AAD roles with "Admin" in the name
@@ -42,8 +43,8 @@ Function Get-MDCAzureADAdminReport {
         $arrAAD_Roles = Get-MgDirectoryRole -ErrorAction Stop | Where-Object {$_.DisplayName -like "*Admin*"}
     }
     catch {
-        Write-Verbose "Unable to get AAD Roles"
-        throw "Unable to get AAD Roles"
+        Write-Host "Unable to get AAD Roles" -BackgroundColor Black -ForegroundColor Red
+        return
     }
 
     # Loop through each AAD role and collect the members
@@ -75,44 +76,65 @@ Function Get-MDCAzureADAdminReport {
                         $arrGroupMembers = Get-MgGroupMember -GroupId $member.Id -ErrorAction Stop
                         $groupMember = ""
                         foreach($groupMember in $arrGroupMembers){
+                            Write-Verbose "Creating an entry for $($groupMember.AdditionalProperties.displayName)"
                             # For each member, add a new object to the array
                             $psobjRoles += [PSCustomObject]@{
                                 RoleType = "AAD"
                                 RoleName = $role.DisplayName
-                                MembershipType = "Group"
+                                MembershipType = "Group - $($role.DisplayName)"
                                 MemberName = $groupMember.AdditionalProperties.displayName
                                 MemberUPN = $groupMember.AdditionalProperties.userPrincipalName
+                                MemberObjId = $roleAssignment.ObjectId
                             }
                         }
                     }
                     catch{
                         #catch: Get-MgGroupMember
-                        Write-Verbose "Unable to get members of group $($member.AdditionalProperties.displayName)"
+                        $objError = $Error[0].Exception.Message
+                        Write-Host "Unable to get members of group $($member.AdditionalProperties.displayName)" -BackgroundColor Black -ForegroundColor Red
+                        Write-Host $objError -BackgroundColor Black -ForegroundColor Red
                     }
                 }else{
-                    Write-Verbose "$($member.AdditionalProperties.displayName) is not a group"
+                    Write-Verbose "Standard user assignment. Creating entry for $($roleAssignment.DisplayName)"
                     $psobjRoles += [PSCustomObject]@{
                         RoleType = "AAD"
                         RoleName = $role.DisplayName
-                        MembershipType = "User"
+                        MembershipType = $roleAssignment.ObjectType
                         MemberName = $member.AdditionalProperties.displayName
                         MemberUPN = $member.AdditionalProperties.userPrincipalName
+                        MemberObjId = $roleAssignment.ObjectId
                     }
                 }
             }#End foreach($member in $arrRoleMembers)
         }           
         catch {
             #catch: Get-MgDirectoryRoleMember
-            Write-Verbose "Unable to get members of role $($role.DisplayName)"
+            Write-Host "Unable to get members of role $($role.DisplayName)" -BackgroundColor Black -ForegroundColor Red
         }
     }#End foreach($role in $arrAAD_Roles)
 
     # If the ExportPath parameter is passed, export the results to a CSV file
     if($ExportPath){
-        Write-Verbose "Exporting AAD Admin Report to $ExportPath"
-        Out-MDCToCSV -PSObj $psobjRoles -ExportPath $ExportPath -FileName "AADAdminReport"
+        
+        try {
+            Write-Verbose "Exporting Azure Resource Admin Report to $ExportPath"
+            Out-MDCToCSV -PSObj $psobjRoles -ExportPath $ExportPath -FileName "AzureResourceAdminReport"
+            Write-Verbose "Export completed"
+        }
+        catch {
+            $objError = $Error[0].Exception.Message
+            Write-Host "Unable to export Azure Resource Admin Report to $ExportPath" -BackgroundColor Black -ForegroundColor Red
+            Write-Host $objError -BackgroundColor Black -ForegroundColor Red
+        }
+        
     }
-    Disconnect-Graph
+
+    # Disconnect from the Microsoft Graph API to keep connections clean
+    Disconnect-Graph | Out-Null
+    Write-Verbose "Disconnected from Graph"
+
+    # Return the array of permissions and details
+    Write-Verbose "Operation Completed. Returning array of permissions"
     return $psobjRoles
 }#End Function Get-GetAzureADAdministrators
 
