@@ -37,13 +37,17 @@ Function Get-MDCAzureResourceAdminReport {
 
     #region Collect Azure Role Assignments at the Management Group Scope
     $arrAzureManagementGroups = @()
+
+    # Try to collect management groups
     try {
         $arrAzureManagementGroups = Get-AzManagementGroup -ErrorAction Stop
     }
     catch {
-        Write-Error $Error[0].Exception.Message
+        Write-Verbose $Error[0].Exception.Message
         Write-Verbose "Unable to retrieve Azure Management Groups"
     }
+    
+    # Loop through each management group and collect role assignments
     foreach($managementGroup in $arrAzureManagementGroups){
         $arrManagementGroupRoleAssignments = @()
         $arrManagementGroupRoleAssignments = Get-AzRoleAssignment -Scope $managementGroup.GroupId | Where-Object {$_.Scope -eq $managementGroup.GroupId}
@@ -94,20 +98,168 @@ Function Get-MDCAzureResourceAdminReport {
         }
     }#endregion
 
+    #region Collect Azure Role Assignments at the Management Group Scope
+    $arrAzureSubscriptions = @()
 
+    # Try to collect subscriptions. End if error encountered.
+    try {
+        $arrAzureSubscriptions = Get-AzSubscription -ErrorAction Stop
+    }
+    catch {
+        Write-Host $Error[0].Exception.Message
+        Write-Host "Unable to retrieve Azure Subscriptions. Stopping..."
+        return
+    }
 
+    # Loop through each subscription and collect role assignments
+    foreach($sub in $arrAzureSubscriptions){
+        
+        # Set the context to the subscription before running the loop algorithm
+        Set-AzContext -SubscriptionId $sub.Id
 
+        # Collect role assignments at the subscription scope
+        $arrRoleAssignments = @()
+        $arrRoleAssignments = Get-AzRoleAssignment | Where-Object {$_.Scope -eq "/subscriptions/$($sub.Id)"}
+        foreach($roleAssignment in $arrRoleAssignments){
+            if ($roleAssignment.ObjectType -like "*group*") { #If role assignment is a group, get the members of the group
+                Write-Verbose "$($role.DisplayName) is a group"
+                $arrGroupMembers = @()
+                try {
+                    #try: Get-MgGroupMember
+                    Write-Verbose "Collecting members of group $($roleAssignment.DisplayName)"
+                    $arrGroupMembers = Get-MgGroupMember -GroupId $roleAssignment.ObjectId -ErrorAction Stop
+                    $groupMember = ""
+                    foreach($groupMember in $arrGroupMembers){
+                        # For each member, add a new object to the array
+                        $psobjRoles += [PSCustomObject]@{
+                            RoleType = "Azure"
+                            Scope = "Subscription"
+                            ResourceId = $sub.Id
+                            ResourceName = $sub.Name
+                            ResourceType = "Subscription"
+                            RoleName = $roleAssignment.RoleDefinitionName
+                            MemberName = $groupMember.AdditionalProperties.userPrincipalName
+                            MemberType = "Group - $($roleAssignment.DisplayName)"
+                            MemberUpn = $groupMember.AdditionalProperties.userPrincipalName
+                            MemberObjId = $roleAssignment.ObjectId
+                        }
+                        $pause = ""
+                    }
+                }
+                Catch{
+                    #catch: Get-MgGroupMember
+                    Write-Verbose "Unable to get members of group $($roleAssignment.DisplayName)"
+                }
+            }else{ #If role assignment is a user, proceed as normal
+                $psobjRoles += [PSCustomObject]@{
+                    RoleType = "Azure"
+                    Scope = "Subscription"
+                    ResourceId = $sub.Id
+                    ResourceType = "Subscription"
+                    ResourceName = $sub.Name
+                    RoleName = $roleAssignment.RoleDefinitionName
+                    MemberName = $roleAssignment.DisplayName
+                    MemberType = "Direct"
+                    MemberUpn = $roleAssignment.SignInName
+                    MemberObjId = $roleAssignment.ObjectId
+                }
+            }
+        }
+        $intProgress++
+    }#endregion
 
+    #region Collect Azure Role Assignments at the Resource Group Scope
+    $arrAzureResourceGroups = @()
 
+    # Loop through each subscription and collect an array of resource groups
+    foreach($sub in $arrAzureSubscriptions){
+        Set-AzContext -SubscriptionId $sub.Id
+        $arrAzureResourceGroups += Get-AzResourceGroup
+    }
 
+    # Loop through each resource group and collect role assignments
+    foreach($rg in $arrAzureResourceGroups){
+        $arrRoleAssignments = @()
+        $arrRoleAssignments = Get-AzRoleAssignment -ResourceGroupName $rg.ResourceGroupName | Where-Object {$_.Scope -like "*resourceGroups/$($rg.ResourceGroupName)"}
+        foreach($roleAssignment in $arrRoleAssignments){
+            if($roleAssignment.ObjectType -like "*group*"){ #If role assignment is a group, get the members of the group
+                Write-Verbose "$($roleAssignment.DisplayName) is a group"
+                $arrGroupMembers = @()
+                try {
+                    #try: Get-MgGroupMember
+                    Write-Verbose "Collecting members of group $($roleAssignment.DisplayName)"
+                    $arrGroupMembers = Get-MgGroupMember -GroupId $roleAssignment.ObjectId -ErrorAction Stop
+                    $groupMember = ""
+                    foreach($groupMember in $arrGroupMembers){
+                        # For each member, add a new object to the array
+                        $psobjRoles += [PSCustomObject]@{
+                            RoleType = "Azure"
+                            Scope = "Resource Group"
+                            ResourceId = $rg.ResourceId
+                            ResourceName = $rg.ResourceGroupName
+                            ResourceType = "Resource Group"
+                            RoleName = $roleAssignment.RoleDefinitionName
+                            MemberName = $groupMember.AdditionalProperties.userPrincipalName
+                            MemberType = "Group - $($roleAssignment.DisplayName)"
+                            MemberUpn = $groupMember.AdditionalProperties.userPrincipalName
+                            MemberObjId = $roleAssignment.ObjectId
+                        }
+                        $pause = ""
+                    }
+                }
+                catch {
+                    #catch: Get-MgGroupMember
+                    Write-Verbose "Unable to get members of group $($roleAssignment.DisplayName)"
+                }
+            }else{ #If role assignment is a user, proceed as normal
+                $psobjRoles += [PSCustomObject]@{
+                    RoleType = "Azure"
+                    Scope = "Resource Group"
+                    ResourceId = $rg.ResourceId
+                    ResourceName = $rg.ResourceGroupName
+                    ResourceType = "Resource Group"
+                    RoleName = $roleAssignment.RoleDefinitionName
+                    MemberName = $roleAssignment.DisplayName
+                    MemberType = "Direct"
+                    MemberUpn = $roleAssignment.SignInName
+                    MemberObjId = $roleAssignment.ObjectId
+                }
+            }
+        }
+        $intProgress++
+    }#endregion
 
+    #region Collect Azure Role Assignments at the Resource Scope
+    $arrAzureResources = @()
 
-    # Put function here
-    #
-    #
-    #
-    #
-    #
+    # Loop through each subscription and collect an array of resources
+    foreach($sub in $arrAzureSubscriptions){
+        Set-AzContext -SubscriptionId $sub.Id
+        $arrAzureResources += Get-AzResource
+    }
+
+    ################### WORK ON THI SECTION NEXT - Scope will not filter correctly
+    foreach($resource in $arrAzureResources){
+
+    
+        $arrRoleAssignments = @()
+        $arrRoleAssignments = Get-AzRoleAssignment -Scope $resource.ResourceId | Where-Object {$_.Scope -like "*$($resource.ResourceId)"}
+        foreach($role in $arrRoleAssignments){
+            $psobjRoles += [PSCustomObject]@{
+                RoleType = "Azure"
+                Scope = "Resource"
+                ResourceId = $resource.ResourceId
+                ResourceName = $resource.ResourceName
+                ResourceType = $resource.ResourceType
+                RoleName = $role.RoleDefinitionName
+                MemberName = $role.DisplayName
+                MemberType = $role.ObjectType
+                MemberUpn = $role.SignInName
+                MemberObjId = $role.ObjectId
+            }
+        }
+        $intProgress++
+    }
 
     return $psobjAzureResourceAdminReport
 }

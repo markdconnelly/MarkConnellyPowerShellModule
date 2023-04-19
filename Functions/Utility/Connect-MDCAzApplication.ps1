@@ -64,5 +64,4 @@ Function Connect-MDCAzApplication {
     catch {
         throw $error[0].Exception.Message
     }
-    
 }
