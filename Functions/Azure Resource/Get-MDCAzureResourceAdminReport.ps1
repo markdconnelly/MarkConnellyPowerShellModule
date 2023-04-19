@@ -334,7 +334,7 @@ Function Get-MDCAzureResourceAdminReport {
     # Export the array of permissions to a CSV file if an export path is specified
     if($ExportPath){
         Write-Verbose "Exporting Azure Resource Admin Report to $ExportPath"
-        Out-MDCToCSV -PSObj $psobjRoles -ExportPath $ExportPath -FileName "AzureResourceAdminReport"
+        Out-MDCToCSV -PSObj $psobjAzureResourceAdminReport -ExportPath $ExportPath -FileName "AzureResourceAdminReport"
     }
 
     # Return the array of permissions and details
