@@ -347,5 +347,5 @@ Function Get-MDCAzureResourceAdminReport {
 
     # Return the array of permissions and details
     Write-Verbose "Operation Completed. Returning array of permissions"
-    return $psobjRoles | Format-Table -AutoSize
+    return $psobjRoles | Format-Table
 }
