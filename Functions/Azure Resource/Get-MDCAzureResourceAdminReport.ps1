@@ -259,7 +259,7 @@ Function Get-MDCAzureResourceAdminReport {
             }
         }
         $intProgress++
-    }
+    }#
 
     return $psobjAzureResourceAdminReport
 }
