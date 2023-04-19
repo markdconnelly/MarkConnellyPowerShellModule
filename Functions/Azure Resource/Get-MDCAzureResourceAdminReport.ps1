@@ -59,8 +59,6 @@ Function Get-MDCAzureResourceAdminReport {
         Write-Verbose "Management groups collected"
     }
     catch {
-        $objError = $Error[0].Exception.Message
-        Write-Verbose $objError
         Write-Verbose "Unable to retrieve Azure Management Groups. If there are no management groups, this is not an error."
     }
     
