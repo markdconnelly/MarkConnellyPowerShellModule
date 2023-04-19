@@ -26,15 +26,24 @@ Function Get-MDCAzureResourceAdminReport {
         [bool]$ProductionEnvironment = $false
     )
 
-    #region Connect to the Azure Resource Manager
+    #region Connect to the Azure Resource Manager and Graph API
+
+    # Try to connect to the Azure Resource Manager. End if error encountered.
     try {
         Write-Verbose "Connecting to the Azure Resource Manager"
         Connect-MDCAzApplication -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop
-        Get-AzContext
     }
     catch {
-        Write-Verbose "Unable to connect to the Azure Resource Manager"
-        throw "Unable to connect to the Azure Resource Manager"
+        throw "Unable to connect to the Azure Resource Manager - $($Error[0].Exception.Message)"
+    }
+
+    # Try to connect to the Microsoft Graph API. End if error encountered.
+    try {
+        Write-Verbose "Connecting to the Microsoft Graph API"
+        Connect-MDCGraphApplication -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop
+    }
+    catch {
+        throw "Unable to connect to the Microsoft Graph API - $($Error[0].Exception.Message)"
     }#endregion
 
     #region Collect Azure Role Assignments at the Management Group Scope
@@ -50,9 +59,10 @@ Function Get-MDCAzureResourceAdminReport {
     }
     
     # Loop through each management group and collect role assignments
+    $psobjRoles = @()
     foreach($managementGroup in $arrAzureManagementGroups){
         $arrManagementGroupRoleAssignments = @()
-        $arrManagementGroupRoleAssignments = Get-AzRoleAssignment -Scope $managementGroup.GroupId | Where-Object {$_.Scope -eq $managementGroup.GroupId}
+        $arrManagementGroupRoleAssignments = Get-AzRoleAssignment -Scope $managementGroup.Id | Where-Object {$_.Scope -eq $managementGroup.Id}
         foreach($roleAssignment in $arrManagementGroupRoleAssignments){
             if($roleAssignment.ObjectType -like "*group*"){ #If role assignment is a group, get the members of the group
                 Write-Verbose "$($roleAssignment.DisplayName) is a group"
@@ -87,7 +97,7 @@ Function Get-MDCAzureResourceAdminReport {
                 $psobjRoles += [PSCustomObject]@{
                     RoleType = "Azure"
                     Scope = "Management Group"
-                    ResourceId = $managementGroup.GroupId
+                    ResourceId = $managementGroup.Id
                     ResourceName = $managementGroup.DisplayName
                     ResourceType = "Management Group"
                     RoleName = $roleAssignment.RoleDefinitionName
@@ -296,4 +306,4 @@ Function Get-MDCAzureResourceAdminReport {
     return $psobjAzureResourceAdminReport
 }
 
-Get-MDCAzureResourceAdminReport -Verbose
+#Get-MDCAzureResourceAdminReport -ProductionEnvironment $true -Verbose
