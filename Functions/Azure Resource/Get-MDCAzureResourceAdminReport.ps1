@@ -14,6 +14,7 @@
 .EXAMPLE
     Get-MDCAzureResourceAdminReport
     Get-MDCAzureResourceAdminReport -ExportPath "C:\Temp\"
+    Get-MDCAzureResourceAdminReport -ExportPath "C:\Temp\" -ProductionEnvironment $true
 #>
 
 Function Get-MDCAzureResourceAdminReport {
