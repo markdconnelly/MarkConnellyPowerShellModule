@@ -32,21 +32,23 @@ Function Get-MDCAzureResourceAdminReport {
     try {
         Write-Verbose "Connecting to the Azure Resource Manager"
         Connect-MDCAzApplication -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop
+        Write-Verbose "Connected to the Azure Resource Manager"
     }
     catch {
-        throw "Unable to connect to the Azure Resource Manager - $($Error[0].Exception.Message)"
+        Write-Verbose "Unable to connect to the Azure Resource Manager - $($Error[0].Exception.Message)"
+        return
     }
 
     # Try to connect to the Microsoft Graph API. End if error encountered.
     try {
         Write-Verbose "Connecting to the Microsoft Graph API"
         Connect-MDCGraphApplication -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop
+        Write-Verbose "Connected to the Microsoft Graph API"
     }
     catch {
-        throw "Unable to connect to the Microsoft Graph API - $($Error[0].Exception.Message)"
+        Write-Verbose "Unable to connect to the Microsoft Graph API - $($Error[0].Exception.Message)"
+        return
     }#endregion
-
-    $psobjRoles = @() # remove after testing/debugging
 
     #region Collect Azure Role Assignments at the Management Group Scope
     $arrAzureManagementGroups = @()
@@ -54,18 +56,22 @@ Function Get-MDCAzureResourceAdminReport {
     # Try to collect management groups
     try {
         $arrAzureManagementGroups = Get-AzManagementGroup -ErrorAction Stop
+        Write-Verbose "Management groups collected"
     }
     catch {
-        Write-Verbose $Error[0].Exception.Message
-        Write-Verbose "Unable to retrieve Azure Management Groups"
+        $objError = $Error[0].Exception.Message
+        Write-Verbose $objError
+        Write-Verbose "Unable to retrieve Azure Management Groups. If there are no management groups, this is not an error."
     }
     
     # Loop through each management group and collect role assignments
     $psobjRoles = @()
     foreach($managementGroup in $arrAzureManagementGroups){
+        Write-Verbose "Processing management group $($managementGroup.DisplayName)"
         $arrManagementGroupRoleAssignments = @()
         $arrManagementGroupRoleAssignments = Get-AzRoleAssignment -Scope $managementGroup.Id | Where-Object {$_.Scope -eq $managementGroup.Id}
         foreach($roleAssignment in $arrManagementGroupRoleAssignments){
+            Write-Verbose "Processing role assignment for $($roleAssignment.DisplayName) in management group $($managementGroup.DisplayName)"
             if($roleAssignment.ObjectType -like "*group*"){ #If role assignment is a group, get the members of the group
                 Write-Verbose "$($roleAssignment.DisplayName) is a group"
                 $arrGroupMembers = @()
@@ -76,6 +82,7 @@ Function Get-MDCAzureResourceAdminReport {
                     $groupMember = ""
                     foreach($groupMember in $arrGroupMembers){
                         # For each member, add a new object to the array
+                        Write-Verbose "Creating entry for member $($groupMember.AdditionalProperties.userPrincipalName)"
                         $psobjRoles += [PSCustomObject]@{
                             RoleType = "Azure"
                             Scope = "Management Group"
@@ -92,9 +99,12 @@ Function Get-MDCAzureResourceAdminReport {
                 }
                 catch {
                     #catch: Get-MgGroupMember
+                    $objError = $Error[0].Exception.Message
                     Write-Verbose "Unable to get members of group $($roleAssignment.DisplayName)"
+                    Write-Verbose $objError
                 }
             }else{ #If role assignment is a user, proceed as normal
+                Write-Verbose "Standard user assignment. Creating entry for $($roleAssignment.DisplayName)"
                 $psobjRoles += [PSCustomObject]@{
                     RoleType = "Azure"
                     Scope = "Management Group"
@@ -117,23 +127,28 @@ Function Get-MDCAzureResourceAdminReport {
     # Try to collect subscriptions. End if error encountered.
     try {
         $arrAzureSubscriptions = Get-AzSubscription -ErrorAction Stop
+        Write-Verbose "Subscriptions collected"
     }
     catch {
-        Write-Host $Error[0].Exception.Message
+        $objError = $Error[0].Exception.Message
+        Write-Verbose $objError
         Write-Host "Unable to retrieve Azure Subscriptions. Stopping..."
         return
     }
 
     # Loop through each subscription and collect role assignments
     foreach($sub in $arrAzureSubscriptions){
-        
+        Write-Verbose "Processing subscription $($sub.DisplayName)"
+
         # Set the context to the subscription before running the loop algorithm
+        Write-Verbose "Setting context to subscription $($sub.DisplayName)"
         Set-AzContext -SubscriptionId $sub.Id
 
         # Collect role assignments at the subscription scope
         $arrRoleAssignments = @()
         $arrRoleAssignments = Get-AzRoleAssignment | Where-Object {$_.Scope -eq "/subscriptions/$($sub.Id)"}
         foreach($roleAssignment in $arrRoleAssignments){
+            Write-Verbose "Processing role assignment for $($roleAssignment.DisplayName) in subscription $($sub.DisplayName)"
             if ($roleAssignment.ObjectType -like "*group*") { #If role assignment is a group, get the members of the group
                 Write-Verbose "$($role.DisplayName) is a group"
                 $arrGroupMembers = @()
@@ -144,6 +159,7 @@ Function Get-MDCAzureResourceAdminReport {
                     $groupMember = ""
                     foreach($groupMember in $arrGroupMembers){
                         # For each member, add a new object to the array
+                        Write-Verbose "Creating entry for member $($groupMember.AdditionalProperties.userPrincipalName)"
                         $psobjRoles += [PSCustomObject]@{
                             RoleType = "Azure"
                             Scope = "Subscription"
@@ -160,9 +176,12 @@ Function Get-MDCAzureResourceAdminReport {
                 }
                 Catch{
                     #catch: Get-MgGroupMember
+                    $objError = $Error[0].Exception.Message
                     Write-Verbose "Unable to get members of group $($roleAssignment.DisplayName)"
+                    Write-Verbose $objError
                 }
             }else{ #If role assignment is a user, proceed as normal
+                Write-Verbose "Standard user assignment. Creating entry for $($roleAssignment.DisplayName)"
                 $psobjRoles += [PSCustomObject]@{
                     RoleType = "Azure"
                     Scope = "Subscription"
@@ -184,15 +203,19 @@ Function Get-MDCAzureResourceAdminReport {
 
     # Loop through each subscription and collect an array of resource groups
     foreach($sub in $arrAzureSubscriptions){
+        Write-Verbose "Collecting resource groups for subscription $($sub.DisplayName)"
         Set-AzContext -SubscriptionId $sub.Id
         $arrAzureResourceGroups += Get-AzResourceGroup
     }
+    Write-Verbose "Resource groups collected"
 
     # Loop through each resource group and collect role assignments
     foreach($rg in $arrAzureResourceGroups){
+        Write-Verbose "Processing resource group $($rg.ResourceGroupName)"
         $arrRoleAssignments = @()
         $arrRoleAssignments = Get-AzRoleAssignment -ResourceGroupName $rg.ResourceGroupName | Where-Object {$_.Scope -like "*resourceGroups/$($rg.ResourceGroupName)"}
         foreach($roleAssignment in $arrRoleAssignments){
+            Write-Verbose "Processing role assignment for $($roleAssignment.DisplayName) in resource group $($rg.ResourceGroupName)"
             if($roleAssignment.ObjectType -like "*group*"){ #If role assignment is a group, get the members of the group
                 Write-Verbose "$($roleAssignment.DisplayName) is a group"
                 $arrGroupMembers = @()
@@ -203,6 +226,7 @@ Function Get-MDCAzureResourceAdminReport {
                     $groupMember = ""
                     foreach($groupMember in $arrGroupMembers){
                         # For each member, add a new object to the array
+                        Write-Verbose "Creating entry for member $($groupMember.AdditionalProperties.userPrincipalName)"
                         $psobjRoles += [PSCustomObject]@{
                             RoleType = "Azure"
                             Scope = "Resource Group"
@@ -219,9 +243,12 @@ Function Get-MDCAzureResourceAdminReport {
                 }
                 catch {
                     #catch: Get-MgGroupMember
+                    $objError = $Error[0].Exception.Message
                     Write-Verbose "Unable to get members of group $($roleAssignment.DisplayName)"
+                    Write-Verbose $objError
                 }
             }else{ #If role assignment is a user, proceed as normal
+                Write-Verbose "Standard user assignment. Creating entry for $($roleAssignment.DisplayName)"
                 $psobjRoles += [PSCustomObject]@{
                     RoleType = "Azure"
                     Scope = "Resource Group"
@@ -243,15 +270,19 @@ Function Get-MDCAzureResourceAdminReport {
 
     # Loop through each subscription and collect an array of resources
     foreach($sub in $arrAzureSubscriptions){
+        Write-Verbose "Collecting resources for subscription $($sub.DisplayName)"
         Set-AzContext -SubscriptionId $sub.Id
         $arrAzureResources += Get-AzResource
     }
+    Write-Verbose "Resources collected"
 
     # Loop through each resource and collect role assignments
     foreach($resource in $arrAzureResources){
+        Write-Verbose "Processing resource $($resource.Name)"
         $arrRoleAssignments = @()
         $arrRoleAssignments = Get-AzRoleAssignment -Scope $resource.ResourceId | Where-Object {$_.Scope -like "*/$($resource.Name)"}
         foreach($roleAssignment in $arrRoleAssignments){
+            Write-Verbose "Processing role assignment for $($roleAssignment.DisplayName) in resource $($resource.Name)"
             if($roleAssignment.ObjectType -like "*group*"){ #If role assignment is a group, get the members of the group
                 Write-Verbose "$($roleAssignment.DisplayName) is a group"
                 $arrGroupMembers = @()
@@ -262,6 +293,7 @@ Function Get-MDCAzureResourceAdminReport {
                     $groupMember = ""
                     foreach($groupMember in $arrGroupMembers){
                         # For each member, add a new object to the array
+                        Write-Verbose "Creating entry for member $($groupMember.AdditionalProperties.userPrincipalName)"
                         $psobjRoles += [PSCustomObject]@{
                             RoleType = "Azure"
                             Scope = "Resource"
@@ -277,9 +309,12 @@ Function Get-MDCAzureResourceAdminReport {
                     }
                 }catch{
                     #catch: Get-MgGroupMember
+                    $objError = $Error[0].Exception.Message
                     Write-Verbose "Unable to get members of group $($roleAssignment.DisplayName)"
+                    Write-Verbose $objError
                 }
             }else{ #If role assignment is a user, proceed as normal
+                Write-Verbose "Standard user assignment. Creating entry for $($roleAssignment.DisplayName)"
                 $psobjRoles += [PSCustomObject]@{
                     RoleType = "Azure"
                     Scope = "Resource"
@@ -296,6 +331,13 @@ Function Get-MDCAzureResourceAdminReport {
         }
     }#endregion
 
+    # Export the array of permissions to a CSV file if an export path is specified
+    if($ExportPath){
+        Write-Verbose "Exporting Azure Resource Admin Report to $ExportPath"
+        Out-MDCToCSV -PSObj $psobjRoles -ExportPath $ExportPath -FileName "AzureResourceAdminReport"
+    }
+
     # Return the array of permissions and details
+    Write-Verbose "Operation Completed. Returning array of permissions"
     return $psobjAzureResourceAdminReport | Format-Table -AutoSize
 }
