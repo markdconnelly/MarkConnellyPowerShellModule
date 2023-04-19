@@ -58,6 +58,11 @@ Function Connect-MDCAzApplication {
     $objServicePrincipalCredential = ""
     $objServicePrincipalCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $strClientID, $strClientSecretSecured
     Write-Verbose "Connecting to the Azure Resource Manager"
-    Connect-AzAccount -ServicePrincipal -Credential $objServicePrincipalCredential -Tenant $strTenantID
-    Get-AzContext
+    try {
+        Connect-AzAccount -ServicePrincipal -Credential $objServicePrincipalCredential -Tenant $strTenantID -ErrorAction Stop
+    }
+    catch {
+        throw $error[0].Exception.Message
+    }
+    
 }
