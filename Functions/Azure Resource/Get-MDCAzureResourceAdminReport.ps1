@@ -31,7 +31,7 @@ Function Get-MDCAzureResourceAdminReport {
     # Try to connect to the Azure Resource Manager. End if error encountered.
     try {
         Write-Verbose "Connecting to the Azure Resource Manager"
-        Connect-MDCAzApplication -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop
+        Connect-MDCAzApplication -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop | Out-Null
         Write-Verbose "Connected to the Azure Resource Manager"
     }
     catch {
@@ -42,7 +42,7 @@ Function Get-MDCAzureResourceAdminReport {
     # Try to connect to the Microsoft Graph API. End if error encountered.
     try {
         Write-Verbose "Connecting to the Microsoft Graph API"
-        Connect-MDCGraphApplication -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop
+        Connect-MDCGraphApplication -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop | Out-Null
         Write-Verbose "Connected to the Microsoft Graph API"
     }
     catch {
@@ -140,7 +140,7 @@ Function Get-MDCAzureResourceAdminReport {
 
         # Set the context to the subscription before running the loop algorithm
         Write-Verbose "Setting context to subscription $($sub.DisplayName)"
-        Set-AzContext -SubscriptionId $sub.Id
+        Set-AzContext -SubscriptionId $sub.Id | Out-Null
 
         # Collect role assignments at the subscription scope
         $arrRoleAssignments = @()
@@ -202,7 +202,7 @@ Function Get-MDCAzureResourceAdminReport {
     # Loop through each subscription and collect an array of resource groups
     foreach($sub in $arrAzureSubscriptions){
         Write-Verbose "Collecting resource groups for subscription $($sub.DisplayName)"
-        Set-AzContext -SubscriptionId $sub.Id
+        Set-AzContext -SubscriptionId $sub.Id | Out-Null
         $arrAzureResourceGroups += Get-AzResourceGroup
     }
     Write-Verbose "Resource groups collected"
@@ -269,7 +269,7 @@ Function Get-MDCAzureResourceAdminReport {
     # Loop through each subscription and collect an array of resources
     foreach($sub in $arrAzureSubscriptions){
         Write-Verbose "Collecting resources for subscription $($sub.DisplayName)"
-        Set-AzContext -SubscriptionId $sub.Id
+        Set-AzContext -SubscriptionId $sub.Id | Out-Null
         $arrAzureResources += Get-AzResource
     }
     Write-Verbose "Resources collected"
@@ -331,11 +331,21 @@ Function Get-MDCAzureResourceAdminReport {
 
     # Export the array of permissions to a CSV file if an export path is specified
     if($ExportPath){
-        Write-Verbose "Exporting Azure Resource Admin Report to $ExportPath"
-        Out-MDCToCSV -PSObj $psobjAzureResourceAdminReport -ExportPath $ExportPath -FileName "AzureResourceAdminReport"
+        
+        try {
+            Write-Verbose "Exporting Azure Resource Admin Report to $ExportPath"
+            Out-MDCToCSV -PSObj $psobjRoles -ExportPath $ExportPath -FileName "AzureResourceAdminReport"
+            Write-Verbose "Export completed"
+        }
+        catch {
+            $objError = $Error[0].Exception.Message
+            Write-Verbose "Unable to export Azure Resource Admin Report to $ExportPath"
+            Write-Verbose $objError
+        }
+        
     }
 
     # Return the array of permissions and details
     Write-Verbose "Operation Completed. Returning array of permissions"
-    return $psobjAzureResourceAdminReport | Format-Table -AutoSize
+    return $psobjRoles | Format-Table -AutoSize
 }
