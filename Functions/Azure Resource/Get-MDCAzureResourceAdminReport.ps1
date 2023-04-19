@@ -41,7 +41,7 @@ Function Get-MDCAzureResourceAdminReport {
         $arrAzureManagementGroups = Get-AzManagementGroup -ErrorAction Stop
     }
     catch {
-        Write-Verbose $Error[0].Exception.Message
+        Write-Error $Error[0].Exception.Message
         Write-Verbose "Unable to retrieve Azure Management Groups"
     }
     foreach($managementGroup in $arrAzureManagementGroups){
@@ -112,4 +112,4 @@ Function Get-MDCAzureResourceAdminReport {
     return $psobjAzureResourceAdminReport
 }
 
-Get-MDCAzureResourceAdminReport 
+Get-MDCAzureResourceAdminReport -Verbose
