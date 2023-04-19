@@ -65,4 +65,3 @@ Function Connect-MDCAzApplication {
         throw $error[0].Exception.Message
     }
 }
-Connect-MDCAzApplication
