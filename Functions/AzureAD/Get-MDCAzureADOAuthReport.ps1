@@ -47,13 +47,24 @@ Function Get-MDCAzureADOAuthReport {
     $tenantWidePermissions = @()
 
     # put a try catch here
-    $tenantWidePermissions = Get-MgOauth2PermissionGrant | Where-Object { $_.ConsentType -eq "AllPrincipals" }
+    try {
+        $tenantWidePermissions = Get-MgOauth2PermissionGrant | Where-Object { $_.ConsentType -eq "AllPrincipals" }
+
+        # Loop through permissions and collect the information
+    }
+    catch {
+        <#Do this if a terminating exception happens#>
+    }
+    
     $scopearray = $($oauth.Scope).Split(" ")
     # output to psobj here
     $psobjRoles += [PSCustomObject]@{
         ConsentType = "AllPrincipals"
+        UserID = "All Users"
         User = " All Users" # principal id -> Display name
+        ApplicationId = "" 
         ApplicationName = "" # client Id -> Display name
+        ResourceId = ""
         ResourceName = "" # resource id -> Display name
         Scope = "" # scope
     }
