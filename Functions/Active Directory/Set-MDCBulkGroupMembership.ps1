@@ -37,6 +37,7 @@ Function Set-MDCBulkGroupMembership{
     $arrGroup = $null
     try {
         $arrGroup = Get-ADGroup -Identity $GroupName -Properties member -ErrorAction Stop
+        Write-Verbose "Group: ""$GroupName"" found"
     }
     catch {
         Write-Host "Unable to resolve group: ""$GroupName""; Stopping..."
@@ -46,6 +47,7 @@ Function Set-MDCBulkGroupMembership{
     $intProgress = 1
     $arrResolvedUsers = @()
     foreach($user in $UserArray){
+        Write-Verbose "Processing user: ""$($user.UserID)"""
         Write-Progress `
             -Activity 'Processing' `
             -Status "$intProgress of $($UserArray.Count)" `
@@ -70,6 +72,7 @@ Function Set-MDCBulkGroupMembership{
     $intProgress = 1
     $psobjBulkAddResults = @()
     foreach($user in $arrResolvedUsers){
+        Write-Verbose "Processing user: ""$($user.Name)"""
         Write-Progress `
             -Activity 'Processing' `
             -Status "$intProgress of $($arrResolvedUsers.Count)" `
@@ -91,16 +94,19 @@ Function Set-MDCBulkGroupMembership{
                     -ErrorAction Stop
                 ##Note that action was taken
                 $boolAction = $true
+                Write-Verbose "User: ""$($user.Name)"" added to group: ""$($arrGroup.Name)"""
             }else{
                 ##Note that action was not taken
                 $boolAction = $false
                 $strError = "User already a member of group"
+                Write-Verbose "User: ""$($user.Name)"" already a member of group: ""$($arrGroup.Name)"""
             }
         }
         catch{
             ##Note that action failed; Capture error
             $boolSuccess = $false
             $strError = $Error[0].Exception.Message
+            Write-Verbose "Error adding user: ""$($user.Name)"" to group: ""$($arrGroup.Name)""; Error: ""$strError"""
         }
         # Add loop output to PSObject
         $psobjBulkAddResults += [PSCustomObject]@{
