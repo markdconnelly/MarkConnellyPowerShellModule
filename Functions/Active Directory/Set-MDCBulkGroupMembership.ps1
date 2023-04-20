@@ -10,10 +10,12 @@
 .NOTES
     This is a custom function written by Mark Connelly, so it may not work as intended.
     Version:        1.0
-    Last Updated: 
+    Last Updated:   4-19-2023 Mark Connelly
     Author:         Mark D. Connelly Jr.
     Creation Date:  04-16-2023
     Purpose/Change: Initial script development
+
+    Next Objectives: Add error checking for domain write priv and end the script with error if you cant add to groups
 .LINK
     https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/Active%20Directory/Set-MDCBulkGroupMembership.ps1
 .EXAMPLE
