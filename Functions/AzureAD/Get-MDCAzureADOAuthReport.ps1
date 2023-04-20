@@ -55,10 +55,12 @@ Function Get-MDCAzureADOAuthReport {
     # Try to get tenant wide permissions. If it fails, then there are none.
     try { 
         $tenantWidePermissions = Get-MgOauth2PermissionGrant | Where-Object { $_.ConsentType -eq "AllPrincipals" } -ErrorAction Stop
+        Write-Verbose "Tenant wide permissions found"
 
         # Loop through permissions and collect the information
         $oauthGrant = @()
         foreach ($oauthGrant in $tenantWidePermissions) {
+            Write-Verbose "Collecting information for tenant wide permission $($oauthGrant.Id)"
             $strConsentType = ""
             $strConsentType = "AllPrincipals"
             $strUserId = ""
@@ -90,6 +92,7 @@ Function Get-MDCAzureADOAuthReport {
 
             # Loop through scopes and create a table entry for each scope that is granted
             foreach($scope in $arrScopes) {
+                Write-Verbose "Collecting information for tenant wide scope $scope"
                 $psobjOauthPermissionReport += [PSCustomObject]@{
                     ConsentType = $strConsentType
                     PrincipalType = "All Users"
@@ -116,6 +119,7 @@ Function Get-MDCAzureADOAuthReport {
     # try to get all users in the tenant.
     try {
         $arrAllUsers = Get-MgUser -All $true
+        Write-Verbose "All users collected"
     }
     catch {
         Write-Verbose "Unable to get full user array. Exiting"
@@ -131,6 +135,7 @@ Function Get-MDCAzureADOAuthReport {
         Write-Verbose "Collecting permissions for user $($user.Id)"
         try {
             $arrUserOauthPermissions = Get-MgUserOauth2PermissionGrant -UserId $userID -ErrorAction Stop
+            Write-Verbose "Permissions collected for user $($user.DisplayName)"
             $strConsentType = ""
             $strConsentType = $arrUserOauthPermissions.ConsentType
             $strUserId = ""
@@ -163,6 +168,7 @@ Function Get-MDCAzureADOAuthReport {
 
             # Loop through scopes and create a table entry for each scope that is granted
             foreach($scope in $arrScopes) {
+                Write-Verbose "Creating table entry for $($user.Id) scope $scope"
                 $psobjOauthPermissionReport += [PSCustomObject]@{
                     ConsentType = $strConsentType
                     PrincipalType = "User"
