@@ -16,12 +16,13 @@
     Creation Date:  04-19-2023 - Mark Connelly
     Purpose/Change: Initial script development
 .LINK
-    <Link to any relevant documentation>
+    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/AzureAD/Get-MDCAzureADOAuthReport.ps1
 .EXAMPLE
-    Get-ExampleFunction -ExampleParameter "Example" -ExampleParameter2 "Example2" 
+    Get-MDCAzureADOAuthReport
+    Get-MDCAzureADOAuthReport -ExportPath "C:\Temp\"
 #>
 
-Function Get-ExampleFunction {
+Function Get-MDCAzureADOAuthReport {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory=$false,Position=0)]
@@ -30,13 +31,43 @@ Function Get-ExampleFunction {
         [bool]$ProductionEnvironment = $false
     )
 
-    # Function code goes here
-    if($Variable1){
-        Write-Host "Has input"
-    } else {
-        Write-Host "Is null"
+    # Connect to the Microsoft Graph API
+    try {
+        Write-Verbose "Connecting to Graph"
+        Connect-MDCGraphApplication -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop | Out-Null
+        Write-Verbose "Connected to Graph"
+    }
+    catch {
+        Write-Host "Unable to connect to Graph" -BackgroundColor Black -ForegroundColor Red
+        return
     }
 
-    # Return statement goes here
-    return $Variable2
+    # Collect an array of all tenant wide permissions
+    Write-Verbose "Collecting tenant wide permissions"
+    $tenantWidePermissions = @()
+
+    # put a try catch here
+    $tenantWidePermissions = Get-MgOauth2PermissionGrant | Where-Object { $_.ConsentType -eq "AllPrincipals" }
+    $scopearray = $($oauth.Scope).Split(" ")
+    # output to psobj here
+    $psobjRoles += [PSCustomObject]@{
+        ConsentType = "AllPrincipals"
+        User = " All Users" # principal id -> Display name
+        ApplicationName = "" # client Id -> Display name
+        ResourceName = "" # resource id -> Display name
+        Scope = "" # scope
+    }
+
+    # Collect an array of all users
+    Write-Verbose "Collecting all users in the tenant"
+    $arrAllUsers = @()
+    # put a try catch here
+    $arrAllUsers = Get-MgUser -All $true
+
+    # Loop through users and collect their permissions
+    $oauth = Get-MgUserOauth2PermissionGrant -UserId $userID
+
+
+    # Return an array of permissions in the tenant
+    return $psobjOauthPermissionReport
 }
