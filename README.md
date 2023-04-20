@@ -23,7 +23,7 @@ I like to maintain separation, so I use the ```C:\PS_CustomModules``` directory 
 
 ## Using the Module
 To use the module, you must import it into your PowerShell session.  To do this, you can use the following command:
-```Import-Module -Name DomainServicesPowerShellModule```
+```Import-Module -Name MarkConnellyPowerShellModule```
 
 ## Module Dependencies
 This module has a few dependencies that must be installed before functions will operate as expected.  These dependencies are listed below:
