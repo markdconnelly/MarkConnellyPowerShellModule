@@ -11,9 +11,9 @@
 .NOTES
     This is a custom function written by Mark Connelly, so it may not work as intended.
     Version:        1.0
-    Author:         <Name>
-    Last Updated:   <Date>
-    Creation Date:  <Date>
+    Author:         Mark D. Connelly Jr.
+    Last Updated:   04-19-2023 - Mark Connelly
+    Creation Date:  04-19-2023 - Mark Connelly
     Purpose/Change: Initial script development
 .LINK
     <Link to any relevant documentation>
