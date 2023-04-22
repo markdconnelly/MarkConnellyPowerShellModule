@@ -1,3 +1,4 @@
+#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
     This function will add an array of users to the provided AD group. The column header that is passed must be "UserID" and it must be formatted in one of the following formats.
