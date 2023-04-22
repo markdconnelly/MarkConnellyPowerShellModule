@@ -33,30 +33,33 @@ Function Get-MDCAzureADOAuthReport {
         [bool]$ProductionEnvironment = $false
     )
 
-    # Connect to the Microsoft Graph API
-    try {
-        Write-Verbose "Connecting to Graph"
-        Connect-MDCGraphApplication -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop | Out-Null
-        Write-Verbose "Connected to Graph"
+    # Check to see if the user is connected to the Microsoft Graph API. Connect if not.
+    $objMgContext = Get-MgContext
+    if($null -eq $objMgContext){
+        try {
+            Write-Verbose "Connecting to Graph"
+            Connect-MDCGraphApplication -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop | Out-Null
+            Write-Verbose "Connected to Graph"
+        }
+        catch {
+            Write-Host "Unable to connect to Graph" -BackgroundColor Black -ForegroundColor Red
+            return
+        }
     }
-    catch {
-        Write-Host "Unable to connect to Graph" -BackgroundColor Black -ForegroundColor Red
-        return
-    }
-
+    
     # Intialize psobj
     $psobjOauthPermissionReport = @()
-
+    
     # Collect an array of all tenant wide permissions
     Write-Verbose "Collecting tenant wide permissions"
     $tenantWidePermissions = @()
-
+    
     #region Tenant Wide Permissions
     # Try to get tenant wide permissions. If it fails, then there are none.
     try { 
         $tenantWidePermissions = Get-MgOauth2PermissionGrant | Where-Object { $_.ConsentType -eq "AllPrincipals" } -ErrorAction Stop
         Write-Verbose "Tenant wide permissions found"
-
+    
         # Loop through permissions and collect the information
         $oauthGrant = @()
         foreach ($oauthGrant in $tenantWidePermissions) {
@@ -89,15 +92,103 @@ Function Get-MDCAzureADOAuthReport {
             }
             $arrScopes = @()
             $arrScopes = $($oauthGrant.Scope).Split(" ")
-
+    
+    
             # Loop through scopes and create a table entry for each scope that is granted
+            $pause
             foreach($scope in $arrScopes) {
-                Write-Verbose "Collecting information for tenant wide scope $scope"
+                if ($scope -eq "" -or $scope -eq " " -or $scope -eq "profile" -or $scope -eq "openid" -or $scope -eq "offline_access") {
+                    Write-Verbose "Skipping scope $scope for $strApplicationName tenant wide permission"
+                }
+                else {
+                    Write-Host "Collecting information for tenant wide scope $scope"
+                    $psobjOauthPermissionReport += [PSCustomObject]@{
+                        ConsentType = $strConsentType
+                        PrincipalType = "All Users"
+                        UserID = $strUserId
+                        UserName = $strUserName 
+                        ApplicationId = $strApplicationId 
+                        ApplicationName = $strApplicationName
+                        ResourceId = $strResourceId
+                        ResourceName = $strResourceName
+                        Scope = $scope
+                    } 
+                }
+            }
+        }
+        $pause
+    }
+    catch {
+        Write-Verbose "No tenant wide permissions found"
+    }#endregion
+    
+    #region User Specific Permissions
+    # Collect an array of all users
+    Write-Verbose "Collecting all users in the tenant"
+    
+    $arrAllUsers = @()
+    # try to get all users in the tenant.
+    try {
+    $arrAllUsers = Get-MgUser -All $true
+    Write-Verbose "All users collected"
+    }
+    catch {
+    Write-Verbose "Unable to get full user array. Exiting"
+    return
+    }
+    
+    # Loop through users and collect their permissions
+    Write-Verbose "Collecting permissions for each user"
+    $user = @()
+    $arrUserOauthPermissions = @()
+    foreach($user in $arrAllUsers){
+    # try to get oauth permissions for the user. If it fails, then document that in the array and move on to the next user. 
+    Write-Verbose "Collecting permissions for user $($user.Id)"
+    try {
+        $arrUserOauthPermissions = Get-MgUserOauth2PermissionGrant -UserId $userID -ErrorAction Stop
+        Write-Verbose "Permissions collected for user $($user.DisplayName)"
+        $strConsentType = ""
+        $strConsentType = $arrUserOauthPermissions.ConsentType
+        $strUserId = ""
+        $strUserId = $user.Id
+        $strUserName = ""
+        $strUserName = $user.DisplayName
+        $strApplicationId = ""
+        $strApplicationId = $oauthGrant.ClientId
+        $strApplicationName = ""
+    
+        # try to resolve the application name 
+        try {
+            $strApplicationName = $((Get-MgServicePrincipal -ServicePrincipalId $strApplicationId -ErrorAction Stop).DisplayName) 
+        }
+        catch {
+            $strApplicationName = "Unable to resolve app display name"
+        }
+        $strResourceId = ""
+        $strResourceId = $oauthGrant.ResourceId
+    
+        # try to resolve the resource name
+        try {
+            $strResourceName = (Get-MgServicePrincipal -ServicePrincipalId $strResourceId).DisplayName
+        }
+        catch {
+            $strResourceName = "Unable to resolve resource display name"
+        }
+        $arrScopes = @()
+        $arrScopes = $($oauthGrant.Scope).Split(" ")
+    
+        # Loop through scopes and create a table entry for each scope that is granted
+        foreach($scope in $arrScopes) {
+            if ($scope -eq "" -or $scope -eq " " -or $scope -eq "profile" -or $scope -eq "openid" -or $scope -eq "offline_access") {
+                Write-Verbose "Skipping scope $scope for $($user.DisplayName)"
+            }
+            else {
+                Write-Verbose "Creating table entry for $($user.Id) scope $scope"
                 $psobjOauthPermissionReport += [PSCustomObject]@{
                     ConsentType = $strConsentType
-                    PrincipalType = "All Users"
+                    PrincipalType = "User"
                     UserID = $strUserId
-                    UserName = $strUserName 
+                    UserName = $strUserName
                     ApplicationId = $strApplicationId 
                     ApplicationName = $strApplicationName
                     ResourceId = $strResourceId
@@ -108,140 +199,70 @@ Function Get-MDCAzureADOAuthReport {
         }
     }
     catch {
-        Write-Verbose "No tenant wide permissions found"
-    }#endregion
-
-    #region User Specific Permissions
-    # Collect an array of all users
-    Write-Verbose "Collecting all users in the tenant"
-    
-    $arrAllUsers = @()
-    # try to get all users in the tenant.
-    try {
-        $arrAllUsers = Get-MgUser -All $true
-        Write-Verbose "All users collected"
+        Write-Verbose "No permissions found for user $($user.Id)"
     }
-    catch {
-        Write-Verbose "Unable to get full user array. Exiting"
-        return
-    }
-    
-    # Loop through users and collect their permissions
-    Write-Verbose "Collecting permissions for each user"
-    $user = @()
-    $arrUserOauthPermissions = @()
-    foreach($user in $arrAllUsers){
-        # try to get oauth permissions for the user. If it fails, then document that in the array and move on to the next user. 
-        Write-Verbose "Collecting permissions for user $($user.Id)"
-        try {
-            $arrUserOauthPermissions = Get-MgUserOauth2PermissionGrant -UserId $userID -ErrorAction Stop
-            Write-Verbose "Permissions collected for user $($user.DisplayName)"
-            $strConsentType = ""
-            $strConsentType = $arrUserOauthPermissions.ConsentType
-            $strUserId = ""
-            $strUserId = $user.Id
-            $strUserName = ""
-            $strUserName = $user.DisplayName
-            $strApplicationId = ""
-            $strApplicationId = $oauthGrant.ClientId
-            $strApplicationName = ""
-
-            # try to resolve the application name 
-            try {
-                $strApplicationName = $((Get-MgServicePrincipal -ServicePrincipalId $strApplicationId -ErrorAction Stop).DisplayName) 
-            }
-            catch {
-                $strApplicationName = "Unable to resolve app display name"
-            }
-            $strResourceId = ""
-            $strResourceId = $oauthGrant.ResourceId
-
-            # try to resolve the resource name
-            try {
-                $strResourceName = (Get-MgServicePrincipal -ServicePrincipalId $strResourceId).DisplayName
-            }
-            catch {
-                $strResourceName = "Unable to resolve resource display name"
-            }
-            $arrScopes = @()
-            $arrScopes = $($oauthGrant.Scope).Split(" ")
-
-            # Loop through scopes and create a table entry for each scope that is granted
-            foreach($scope in $arrScopes) {
-                Write-Verbose "Creating table entry for $($user.Id) scope $scope"
-                $psobjOauthPermissionReport += [PSCustomObject]@{
-                    ConsentType = $strConsentType
-                    PrincipalType = "User"
-                    UserID = $strUserId
-                    UserName = $strUserName # principal id -> Display name
-                    ApplicationId = $strApplicationId 
-                    ApplicationName = $strApplicationName # client Id -> Display name
-                    ResourceId = $strResourceId
-                    ResourceName = $strResourceName # resource id -> Display name
-                    Scope = $scope # scope
-                }
-            }
-        }
-        catch {
-            Write-Verbose "No permissions found for user $($user.Id)"
-        }
     }#endregion
-
-
+    
+    
     #region Application Specific Permissions
     # Collect an array of all service principals
     Write-Verbose "Collecting all service principals in the tenant"
-
+    
     $arrAllServicePrincipals = @()
     # try to get all service principals in the tenant.
     try {
-        $arrAllServicePrincipals = Get-MgServicePrincipal -All $true
+    $arrAllServicePrincipals = Get-MgServicePrincipal -All $true
     }
     catch {
-        $objError = $Error[0].Exception.Message
-        Write-Verbose "Unable to get full service principal array. Exiting"
-        throw "Unable to get full service principal array. Error: $objError"
+    $objError = $Error[0].Exception.Message
+    Write-Verbose "Unable to get full service principal array. Exiting"
+    throw "Unable to get full service principal array. Error: $objError"
     }
-
+    
     # Loop through service principals and collect their permissions
     Write-Verbose "Collecting permissions for each service principal"
     $servicePrincipal = @()
     $arrServicePrincipalOauthPermissions = @()
     foreach($servicePrincipal in $arrAllServicePrincipals){
-        # try to get oauth permissions for the service principal. If it fails, then document that in the array and move on to the next service principal. 
-        Write-Verbose "Collecting permissions for service principal $($servicePrincipal.Id)"
+    # try to get oauth permissions for the service principal. If it fails, then document that in the array and move on to the next service principal. 
+    Write-Verbose "Collecting permissions for service principal $($servicePrincipal.Id)"
+    try {
+        $arrServicePrincipalOauthPermissions = Get-MgServicePrincipalOauth2PermissionGrant -ServicePrincipalId $servicePrincipal.Id -ErrorAction Stop
+        $strConsentType = ""
+        $strConsentType = $arrServicePrincipalOauthPermissions.ConsentType
+        $strUserId = ""
+        $strUserName = ""
+        $strApplicationId = ""
+        $strApplicationId = $arrServicePrincipalOauthPermissions.ClientId
+        $strApplicationName = ""
+    
+        # try to resolve the application name 
         try {
-            $arrServicePrincipalOauthPermissions = Get-MgServicePrincipalOauth2PermissionGrant -ServicePrincipalId $servicePrincipal.Id -ErrorAction Stop
-            $strConsentType = ""
-            $strConsentType = $arrServicePrincipalOauthPermissions.ConsentType
-            $strUserId = ""
-            $strUserName = ""
-            $strApplicationId = ""
-            $strApplicationId = $arrServicePrincipalOauthPermissions.ClientId
-            $strApplicationName = ""
-
-            # try to resolve the application name 
-            try {
-                $strApplicationName = $((Get-MgServicePrincipal -ServicePrincipalId $strApplicationId -ErrorAction Stop).DisplayName) 
+            $strApplicationName = $((Get-MgServicePrincipal -ServicePrincipalId $strApplicationId -ErrorAction Stop).DisplayName) 
+        }
+        catch {
+            $strApplicationName = "Unable to resolve app display name"
+        }
+        $strResourceId = ""
+        $strResourceId = $arrServicePrincipalOauthPermissions.ResourceId
+    
+        # try to resolve the resource name
+        try {
+            $strResourceName = (Get-MgServicePrincipal -ServicePrincipalId $strResourceId).DisplayName
+        }
+        catch {
+            $strResourceName = "Unable to resolve resource display name"
+        }
+        $arrScopes = @()
+        $arrScopes = $($oauthGrant.Scope).Split(" ")
+    
+        # Loop through scopes and create a table entry for each scope that is granted
+        foreach($scope in $arrScopes) {
+            if ($scope -eq "" -or $scope -eq " " -or $scope -eq "profile" -or $scope -eq "openid" -or $scope -eq "offline_access") {
+                Write-Verbose "Skipping scope $scope for $strApplicationName"
             }
-            catch {
-                $strApplicationName = "Unable to resolve app display name"
-            }
-            $strResourceId = ""
-            $strResourceId = $arrServicePrincipalOauthPermissions.ResourceId
-
-            # try to resolve the resource name
-            try {
-                $strResourceName = (Get-MgServicePrincipal -ServicePrincipalId $strResourceId).DisplayName
-            }
-            catch {
-                $strResourceName = "Unable to resolve resource display name"
-            }
-            $arrScopes = @()
-            $arrScopes = $($oauthGrant.Scope).Split(" ")
-
-            # Loop through scopes and create a table entry for each scope that is granted
-            foreach($scope in $arrScopes) {
+            else {       
+                Write-Verbose "Creating table entry for $($servicePrincipal.Id) scope $scope"
                 $psobjOauthPermissionReport += [PSCustomObject]@{
                     ConsentType = $strConsentType
                     PrincipalType = "Service Principal"
@@ -255,11 +276,12 @@ Function Get-MDCAzureADOAuthReport {
                 }
             }
         }
+    }
         catch {
             Write-Verbose "No permissions found for service principal $($servicePrincipal.Id)"
         }
     }#endregion
-
+    
     # If the ExportPath parameter is passed, export the results to a CSV file
     if($ExportPath){
     
@@ -273,11 +295,9 @@ Function Get-MDCAzureADOAuthReport {
             Write-Host "Unable to export Azure Resource Admin Report to $ExportPath" -BackgroundColor Black -ForegroundColor Red
             throw $objError 
         }
-        
+    
     }
 
     # Return an array of permissions in the tenant
     return $psobjOauthPermissionReport
 }
-
-Get-MDCAzureADOAuthReport -ExportPath "C:\Temp"
