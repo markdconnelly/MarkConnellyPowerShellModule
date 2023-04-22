@@ -350,12 +350,7 @@ Function Get-MDCAzureResourceAdminReport {
         
     }
 
-    # Disconnect from Azure and Microsoft Graph
-    Write-Verbose "Disconnecting from Azure and Microsoft Graph"
-    Disconnect-MgGraph | Out-Null
-    Disconnect-AzAccount | Out-Null
-
     # Return the array of permissions and details
     Write-Verbose "Operation Completed. Returning array of permissions"
-    return $psobjRoles | Format-Table
+    return $psobjRoles
 }
