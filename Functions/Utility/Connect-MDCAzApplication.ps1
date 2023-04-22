@@ -29,6 +29,50 @@ Function Connect-MDCAzApplication {
         [bool]$ProductionEnvironment = $false
     )
 
+    # Get the current Azure Resource Manager context
+    $objCurrentAzContext = @()
+    $objCurrentAzContext = Get-AzContext
+
+    # Try to get the secrets from the secret store. Fail if any of the secrets are not found.
+    try {
+        $strPrdTenantId = Get-Secret -Name PrdPSAppTenantID -AsPlainText -ErrorAction Stop
+        $strPrdAppId = Get-Secret -Name PrdPSAppID -AsPlainText -ErrorAction Stop
+        $strPrdAppSecret = Get-Secret -Name PrdPSAppSecret -AsPlainText -ErrorAction Stop
+        $strDevTenantId = Get-Secret -Name DevPSAppTenantID -AsPlainText -ErrorAction Stop
+        $strDevAppId = Get-Secret -Name DevPSAppID -AsPlainText -ErrorAction Stop
+        $strDevAppSecret = Get-Secret -Name DevPSAppSecret -AsPlainText -ErrorAction Stop       
+    }
+    catch {
+        return "Unable to access the secret store"
+    }
+
+    # If the current context is not null, check to see if the current context matches the selected environment. 
+    # If it matches, return. If it does not, disconnect and continue.
+    if($null -ne $objCurrentAzContext){
+        if($ProductionEnvironment -eq $true){
+            if($objCurrentAzContext.TenantId -eq $strPrdTenantId){
+                Write-Verbose "Already Connected to Production Environment"
+                return
+            }
+            else{
+                Disconnect-Graph | Out-Null
+            }
+        }
+        else{
+            if($objCurrentAzContext.TenantId -eq $strDevTenantId){
+                Write-Verbose "Already Connected to Development Environment"
+                return
+            }
+            else {
+                Disconnect-Graph | Out-Null
+            }
+        }
+    } 
+
+
+
+
+
     # Check if you should connect to the production environment or the development environment. Set secret variables appropriately.
     $strClientID = ""
     $strTenantID = ""
