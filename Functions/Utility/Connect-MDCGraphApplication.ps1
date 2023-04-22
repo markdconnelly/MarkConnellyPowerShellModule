@@ -31,7 +31,7 @@ Function Connect-MDCGraphApplication {
     $strClientID = ""
     $strTenantID = ""
     $strClientSecret = ""
-    Disconnect-Graph
+    Disconnect-Graph | Out-Null
     if($ProductionEnvironment -eq $true){
         Write-Verbose "Connecting to Production Environment"
         $strClientID = Get-Secret -Name PrdPSAppID -AsPlainText
