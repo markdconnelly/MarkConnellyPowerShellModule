@@ -30,7 +30,6 @@ Function Connect-MDCGraphApplication {
     )
 
     # Get the current Graph context
-    $objCurrentMgContext = @()
     $objCurrentMgContext = Get-MgContext
 
     # Try to get the secrets from the secret store. Fail if any of the secrets are not found.
@@ -53,6 +52,9 @@ Function Connect-MDCGraphApplication {
             if($objCurrentMgContext.TenantId -eq $strPrdTenantId){
                 Write-Verbose "Already Connected to Production Environment"
                 return
+            }
+            else {
+                Disconnect-Graph | Out-Null
             }
         }
         else{
