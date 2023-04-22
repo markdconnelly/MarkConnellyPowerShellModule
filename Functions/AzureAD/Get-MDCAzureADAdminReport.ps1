@@ -130,10 +130,6 @@ Function Get-MDCAzureADAdminReport {
         
     }
 
-    # Disconnect from the Microsoft Graph API to keep connections clean
-    Disconnect-Graph | Out-Null
-    Write-Verbose "Disconnected from Graph"
-
     # Return the array of permissions and details
     Write-Verbose "Operation Completed. Returning array of permissions"
     return $psobjRoles
