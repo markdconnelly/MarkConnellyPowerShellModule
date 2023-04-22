@@ -59,6 +59,7 @@ Function Connect-MDCGraphApplication {
                     return
                 }
                 else {
+                    Write-Verbose "Current context is not connected to the production environment. Disconnecting and continuing"
                     Disconnect-Graph | Out-Null
                 }
             }
@@ -68,6 +69,7 @@ Function Connect-MDCGraphApplication {
                     return
                 }
                 else {
+                    Write-Verbose "Current context is not connected to the development environment. Disconnecting and continuing"
                     Disconnect-Graph | Out-Null
                 }
             }
