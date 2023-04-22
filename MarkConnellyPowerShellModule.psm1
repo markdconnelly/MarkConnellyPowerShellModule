@@ -13,7 +13,7 @@ $requiredModules += @(
 Write-Verbose "Required modules: $requiredModules"
 
 # Export nothing to clear implicit exports
-# Export-ModuleMember
+Export-ModuleMember
 
 # Perform dependent module checks
 
@@ -66,4 +66,4 @@ Foreach ($function in $functionFiles){
 }
  
 # Export everything in the public folder
-# Export-ModuleMember -Function * -Alias * -Cmdlet *
+Export-ModuleMember -Function * -Alias * -Cmdlet *
