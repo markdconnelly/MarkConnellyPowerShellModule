@@ -21,9 +21,15 @@ Function Set-MDCGraphProfile {
     )
     # Validate that the correct profile is in use
     $strCurrentProfileName = Get-MgProfile | Select-Object -ExpandProperty Name
-    Write-Host "Current profile: $strCurrentProfileName" -BackgroundColor Black -ForegroundColor Green
+    Write-Verbose "Current profile: $strCurrentProfileName"
     if ($strCurrentProfileName -ne $ProfileName) {
-        Select-MgProfile $ProfileName
-        Write-Host "Profile check has changed the profile to $ProfileName" -BackgroundColor Black -ForegroundColor Green
+        try {
+            Select-MgProfile $ProfileName
+            Write-Verbose "Profile check has changed the profile to $ProfileName"
+        }
+        catch {
+            Write-Error "Profile check failed to change the profile to $ProfileName"
+            return $Error[0].Exception.Message
+        }
     }
 }

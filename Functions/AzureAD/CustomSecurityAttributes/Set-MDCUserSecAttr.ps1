@@ -25,8 +25,14 @@ Function Set-MDCUserSecAttr{
     )
 
     # Switch to the beta profile
-    Set-GraphProfile -ProfileName "beta"
-
+    try {
+        Set-GraphProfile -ProfileName "beta"
+    }
+    catch {
+        throw "Unable to switch to the beta profile."
+        return $Error[0].Exception.Message
+    }
+    
     # Validate that the attribute set is valid
     try {
         Get-MgDirectoryCustomSecurityAttributeDefinition `
@@ -34,6 +40,7 @@ Function Set-MDCUserSecAttr{
     }
     catch {
         throw "The attribute set and attribute name combination is not valid. Please check the attribute set and attribute name and try again."
+        return $Error[0].Exception.Message
     }
     try {
         $hashAttibuteDefinition = Set-MDCSecAttrHashTable `
@@ -43,6 +50,7 @@ Function Set-MDCUserSecAttr{
     }
     catch {
         throw "Unable to create a hash table with the attribute set and attribute name combination."
+        return $Error[0].Exception.Message
     }
     try {
         Update-MgUser -UserId $UserPrincipalName -BodyParameter $hashAttibuteDefinition -ErrorAction Stop
@@ -52,7 +60,8 @@ Function Set-MDCUserSecAttr{
         Write-Host "AttributeValue: $CustomSecurityAttributeValue" -BackgroundColor Black -ForegroundColor Green
     }
     catch {
-        throw $Error[0].Exception.Message
+        throw "Unable to update the user's custom security attribute."
+        return $Error[0].Exception.Message
     }
 
     # Switch to the v1.0 profile
