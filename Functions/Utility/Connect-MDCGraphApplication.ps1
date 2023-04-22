@@ -47,6 +47,16 @@ Function Connect-MDCGraphApplication {
 
     # If the current context is not null, check to see if the current context matches the selected environment. 
     # If it matches, return. If it does not, disconnect and continue.
+    try {
+        $tokenTesting = Get-MgUser -All $true -Top 1 -ErrorAction Stop
+        $tokenTesting = $null
+    }
+    catch {
+        Write-Verbose "Tested current context with $($tokenTesting.DisplayName) and it is not valid."
+        Write-Verbose "Unable to get user from current context. Disconnecting and continuing"
+        Disconnect-Graph | Out-Null
+    }
+
     if($null -ne $objCurrentMgContext){
         if($ProductionEnvironment -eq $true){
             if($objCurrentMgContext.TenantId -eq $strPrdTenantId){
