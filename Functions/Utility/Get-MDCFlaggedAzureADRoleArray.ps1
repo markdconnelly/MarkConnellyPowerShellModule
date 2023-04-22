@@ -12,10 +12,10 @@
 .LINK
     https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/Utility/Get-FlaggedAzureADRoleArray.ps1
 .EXAMPLE
-    $variable = Get-FlaggedAzureADRoleArray
+    $variable = Get-MDCFlaggedAzureADRoleArray
 #>
 
-Function Get-FlaggedAzureADRoleArray {
+Function Get-MDCFlaggedAzureADRoleArray {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory=$false,Position=0)]
