@@ -49,15 +49,6 @@ Function Connect-MDCAzApplication {
     # If the current context is not null, check to see if the current context matches the selected environment. 
     # If it matches, return. If it does not, disconnect and continue.
     try {
-        $graphTokenTesting = Get-MgUser -All $true -Top 1 -ErrorAction Stop
-        $graphTokenTesting = $null
-    }
-    catch {
-        Write-Verbose "Tested current context with $($graphTokenTesting.DisplayName) and it is not valid."
-        Write-Verbose "Unable to get user from current context. Disconnecting and continuing"
-        Disconnect-Graph | Out-Null
-    }
-    try {
         $azureTokenTesting = Get-AzSubscription -ErrorAction Stop
         $azureTokenTesting = $null
     }
@@ -69,25 +60,38 @@ Function Connect-MDCAzApplication {
 
     if($null -ne $objCurrentAzContext){
         if($ProductionEnvironment -eq $true){
-            if($objCurrentAzContext.TenantId -eq $strPrdTenantId){
-                Write-Verbose "Already Connected to Production Environment"
-                return
-            }
-            else{
-                Disconnect-Graph | Out-Null
-            }
-        }
-        else{
-            if($objCurrentAzContext.TenantId -eq $strDevTenantId){
-                Write-Verbose "Already Connected to Development Environment"
-                return
-            }
-            else {
-                Disconnect-Graph | Out-Null
-            }
-        }
-    } 
+            try {
+                $azureTokenTesting = Get-AzSubscription -ErrorAction Stop
+                $azureTokenTesting = $null
 
+                if($ProductionEnvironment -eq $true){
+                    if($objCurrentAzContext.TenantId -eq $strPrdTenantId){
+                        Write-Verbose "Already Connected to Production Environment"
+                        return
+                    }
+                    else{
+                        Write-Verbose "Current context is not connected to the production environment. Disconnecting and continuing"
+                        Disconnect-AzAccount | Out-Null
+                    }
+                }
+                else{
+                    if($objCurrentAzContext.TenantId -eq $strDevTenantId){
+                        Write-Verbose "Already Connected to Development Environment"
+                        return
+                    }
+                    else{
+                        Write-Verbose "Current context is not connected to the development environment. Disconnecting and continuing"
+                        Disconnect-AzAccount | Out-Null
+                    }
+                }
+            }
+            catch {
+                Write-Verbose "Tested current context with $($azureTokenTesting[0].Name) and it is not valid."
+                Write-Verbose "Unable to get subscription from current context. Disconnecting and continuing"
+                Disconnect-AzAccount | Out-Null
+            }
+        }
+    }
     # Set the environment variables based on the selected environment. Production or development
     if($ProductionEnvironment -eq $true){
         Write-Verbose "Setting production environment variables"
