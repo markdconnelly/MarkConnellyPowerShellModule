@@ -13,7 +13,7 @@
     This is a custom function written by Mark Connelly, so it may not work as intended.
     Version:        1.0
     Author:         Mark D. Connelly Jr.
-    Last Updated:   04-20-2023 - Mark Connelly
+    Last Updated:   04-21-2023 - Mark Connelly
     Creation Date:  04-19-2023 - Mark Connelly
     Purpose/Change: Initial script development
 .LINK
@@ -260,6 +260,24 @@ Function Get-MDCAzureADOAuthReport {
         }
     }#endregion
 
+    # If the ExportPath parameter is passed, export the results to a CSV file
+    if($ExportPath){
+    
+        try {
+            Write-Verbose "Exporting Azure Resource Admin Report to $ExportPath"
+            Out-MDCToCSV -PSObj $psobjRoles -ExportPath $ExportPath -FileName "AzureResourceAdminReport"
+            Write-Verbose "Export completed"
+        }
+        catch {
+            $objError = $Error[0].Exception.Message
+            Write-Host "Unable to export Azure Resource Admin Report to $ExportPath" -BackgroundColor Black -ForegroundColor Red
+            throw $objError 
+        }
+        
+    }
+
     # Return an array of permissions in the tenant
     return $psobjOauthPermissionReport
 }
+
+Get-MDCAzureADOAuthReport -ExportPath "C:\Temp"
