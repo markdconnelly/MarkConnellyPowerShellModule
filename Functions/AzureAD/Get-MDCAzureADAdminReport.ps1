@@ -85,7 +85,7 @@ Function Get-MDCAzureADAdminReport {
                                 MembershipType = "Group - $($role.DisplayName)"
                                 MemberName = $groupMember.AdditionalProperties.displayName
                                 MemberUPN = $groupMember.AdditionalProperties.userPrincipalName
-                                MemberObjId = $roleAssignment.ObjectId
+                                MemberObjId = $groupMember.ObjectId
                             }
                         }
                     }
