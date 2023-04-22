@@ -9,11 +9,11 @@
   None
 .NOTES
     This is a custom function written by Mark Connelly, so it may not work as intended.
-    Version:        1.0
+    Version:        1.1
     Author:         Mark D. Connelly Jr.
-    Last Updated:   4-17-2023
+    Last Updated:   4-22-2023
     Creation Date:  4-16-2023
-    Purpose/Change: Initial script development
+    Purpose/Change: Added error checking to get current context and perform no action if already connected in the proper context.
 .LINK
     https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/Utility/Connect-MDCGraphApplication.ps1
 .EXAMPLE
@@ -28,23 +28,61 @@ Function Connect-MDCGraphApplication {
         [Parameter(Mandatory=$false,Position=0)]
         [bool]$ProductionEnvironment = $false
     )
-    $strClientID = ""
-    $strTenantID = ""
-    $strClientSecret = ""
-    Disconnect-Graph
-    if($ProductionEnvironment -eq $true){
-        Write-Verbose "Connecting to Production Environment"
-        $strClientID = Get-Secret -Name PrdPSAppID -AsPlainText
-        $strTenantID = Get-Secret -Name PrdPSAppTenantID -AsPlainText
-        $strClientSecret = Get-Secret -Name PrdPSAppSecret -AsPlainText
-    }
-    else {
 
-        Write-Verbose "Connecting to Development Environment"
-        $strClientID = Get-Secret -Name DevPSAppID -AsPlainText
-        $strTenantID = Get-Secret -Name DevPSAppTenantID -AsPlainText
-        $strClientSecret = Get-Secret -Name DevPSAppSecret -AsPlainText
+    # Get the current Graph context
+    $objCurrentMgContext = Get-MgContext
+
+    # Try to get the secrets from the secret store. Fail if any of the secrets are not found.
+    try {
+        $strPrdTenantId = Get-Secret -Name PrdPSAppTenantID -AsPlainText -ErrorAction Stop
+        $strPrdAppId = Get-Secret -Name PrdPSAppID -AsPlainText -ErrorAction Stop
+        $strPrdAppSecret = Get-Secret -Name PrdPSAppSecret -AsPlainText -ErrorAction Stop
+        $strDevTenantId = Get-Secret -Name DevPSAppTenantID -AsPlainText -ErrorAction Stop
+        $strDevAppId = Get-Secret -Name DevPSAppID -AsPlainText -ErrorAction Stop
+        $strDevAppSecret = Get-Secret -Name DevPSAppSecret -AsPlainText -ErrorAction Stop
     }
+    catch {
+        return "Unable to access the secret store"
+    }
+
+    # If the current context is not null, check to see if the current context matches the selected environment. 
+    # If it matches, return. If it does not, disconnect and continue.
+    if($null -ne $objCurrentMgContext){
+        if($ProductionEnvironment -eq $true){
+            if($objCurrentMgContext.TenantId -eq $strPrdTenantId){
+                Write-Verbose "Already Connected to Production Environment"
+                return
+            }
+            else {
+                Disconnect-Graph | Out-Null
+            }
+        }
+        else{
+            if($objCurrentMgContext.TenantId -eq $strDevTenantId){
+                Write-Verbose "Already Connected to Development Environment"
+                return
+            }
+            else {
+                Disconnect-Graph | Out-Null
+            }
+        }
+    }
+
+    # Set the environment variables based on the selected environment. Production or development
+    if($ProductionEnvironment -eq $true){
+        Write-Verbose "Setting production environment variables"
+        $strClientID = $strPrdAppId
+        $strTenantID = $strPrdTenantId
+        $strClientSecret = $strPrdAppSecret
+    }
+    else{
+        Write-Verbose "Setting development environment variables"
+        $strClientID = $strDevAppId
+        $strTenantID = $strDevTenantId
+        $strClientSecret = $strDevAppSecret
+    }
+
+    # Create the API body and request the access token
     Write-Verbose "Client ID: $strClientID"
     Write-Verbose "Tenant ID: $strTenantID"
     Write-Verbose "Creating API uri & body to request access token"
@@ -58,5 +96,13 @@ Function Connect-MDCGraphApplication {
     Write-Verbose "Requesting access token from $strAPI_URI"
     $objAccessTokenRaw = Invoke-RestMethod -Method Post -Uri $strAPI_URI -Body $arrAPI_Body -ContentType "application/x-www-form-urlencoded"
     $objAccessToken = $objAccessTokenRaw.access_token
-    Connect-Graph -Accesstoken $objAccessToken
+
+    # Try to connect to the graph api. If you cannot, return an error.
+    try {
+        Connect-Graph -Accesstoken $objAccessToken | Out-Null
+        Write-Verbose "Connected to Graph API"
+    }
+    catch {
+        return "Unable to connect to Graph API"
+    }
 }

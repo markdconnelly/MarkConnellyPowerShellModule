@@ -9,11 +9,11 @@
   <Outputs if any, otherwise state None - example: Log file stored in C:\Windows\Temp\<name>.log>
 .NOTES
     This is a custom function written by Mark Connelly, so it may not work as intended.
-    Version:        1.0
+    Version:        1.1
     Author:         Mark D. Connelly Jr.
-    Last Updated:   4-17-2023
+    Last Updated:   4-22-2023
     Creation Date:  4-17-2023
-    Purpose/Change: Initial script development
+    Purpose/Change: Added error checking to get current context and perform no action if already connected in the proper context.
 .LINK
     https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/Utility/Connect-MDCAzApplication.ps1
 .EXAMPLE
@@ -29,23 +29,58 @@ Function Connect-MDCAzApplication {
         [bool]$ProductionEnvironment = $false
     )
 
-    # Check if you should connect to the production environment or the development environment. Set secret variables appropriately.
-    $strClientID = ""
-    $strTenantID = ""
-    $strClientSecret = ""
-    Disconnect-AzAccount
-    if($ProductionEnvironment -eq $true){
-        Write-Verbose "Connecting to Production Environment"
-        $strClientID = Get-Secret -Name PrdPSAppID -AsPlainText
-        $strTenantID = Get-Secret -Name PrdPSAppTenantID -AsPlainText
-        $strClientSecret = Get-Secret -Name PrdPSAppSecret -AsPlainText
-    }
-    else {
+    # Get the current Azure Resource Manager context
+    $objCurrentAzContext = @()
+    $objCurrentAzContext = Get-AzContext
 
-        Write-Verbose "Connecting to Development Environment"
-        $strClientID = Get-Secret -Name DevPSAppID -AsPlainText
-        $strTenantID = Get-Secret -Name DevPSAppTenantID -AsPlainText
-        $strClientSecret = Get-Secret -Name DevPSAppSecret -AsPlainText
+    # Try to get the secrets from the secret store. Fail if any of the secrets are not found.
+    try {
+        $strPrdTenantId = Get-Secret -Name PrdPSAppTenantID -AsPlainText -ErrorAction Stop
+        $strPrdAppId = Get-Secret -Name PrdPSAppID -AsPlainText -ErrorAction Stop
+        $strPrdAppSecret = Get-Secret -Name PrdPSAppSecret -AsPlainText -ErrorAction Stop
+        $strDevTenantId = Get-Secret -Name DevPSAppTenantID -AsPlainText -ErrorAction Stop
+        $strDevAppId = Get-Secret -Name DevPSAppID -AsPlainText -ErrorAction Stop
+        $strDevAppSecret = Get-Secret -Name DevPSAppSecret -AsPlainText -ErrorAction Stop       
+    }
+    catch {
+        return "Unable to access the secret store"
+    }
+
+    # If the current context is not null, check to see if the current context matches the selected environment. 
+    # If it matches, return. If it does not, disconnect and continue.
+    if($null -ne $objCurrentAzContext){
+        if($ProductionEnvironment -eq $true){
+            if($objCurrentAzContext.TenantId -eq $strPrdTenantId){
+                Write-Verbose "Already Connected to Production Environment"
+                return
+            }
+            else{
+                Disconnect-Graph | Out-Null
+            }
+        }
+        else{
+            if($objCurrentAzContext.TenantId -eq $strDevTenantId){
+                Write-Verbose "Already Connected to Development Environment"
+                return
+            }
+            else {
+                Disconnect-Graph | Out-Null
+            }
+        }
+    } 
+
+    # Set the environment variables based on the selected environment. Production or development
+    if($ProductionEnvironment -eq $true){
+        Write-Verbose "Setting production environment variables"
+        $strClientID = $strPrdAppId
+        $strTenantID = $strPrdTenantId
+        $strClientSecret = $strPrdAppSecret
+    }
+    else{
+        Write-Verbose "Setting development environment variables"
+        $strClientID = $strDevAppId
+        $strTenantID = $strDevTenantId
+        $strClientSecret = $strDevAppSecret
     }
     Write-Verbose "Client ID: $strClientID"
     Write-Verbose "Tenant ID: $strTenantID"
@@ -62,6 +97,6 @@ Function Connect-MDCAzApplication {
         Connect-AzAccount -ServicePrincipal -Credential $objServicePrincipalCredential -Tenant $strTenantID -ErrorAction Stop
     }
     catch {
-        throw $error[0].Exception.Message
+        return "Unable to connect to the Azure Resource Manager"
     }
 }
