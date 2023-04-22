@@ -47,34 +47,35 @@ Function Connect-MDCGraphApplication {
 
     # If the current context is not null, check to see if the current context matches the selected environment. 
     # If it matches, return. If it does not, disconnect and continue.
-    try {
-        $tokenTesting = Get-MgUser -All $true -Top 1 -ErrorAction Stop
-        $tokenTesting = $null
-    }
-    catch {
-        Write-Verbose "Tested current context with $($tokenTesting.DisplayName) and it is not valid."
-        Write-Verbose "Unable to get user from current context. Disconnecting and continuing"
-        Disconnect-Graph | Out-Null
-    }
-
     if($null -ne $objCurrentMgContext){
-        if($ProductionEnvironment -eq $true){
-            if($objCurrentMgContext.TenantId -eq $strPrdTenantId){
-                Write-Verbose "Already Connected to Production Environment"
-                return
+        # try to test the current context. If it fails, disconnect and continue.
+        try {
+            $tokenTesting = Get-MgUser -All:$true -Top 1 -ErrorAction Stop
+            $tokenTesting = $null
+
+            if($ProductionEnvironment -eq $true){
+                if($objCurrentMgContext.TenantId -eq $strPrdTenantId){
+                    Write-Verbose "Already Connected to Production Environment"
+                    return
+                }
+                else {
+                    Disconnect-Graph | Out-Null
+                }
             }
-            else {
-                Disconnect-Graph | Out-Null
+            else{
+                if($objCurrentMgContext.TenantId -eq $strDevTenantId){
+                    Write-Verbose "Already Connected to Development Environment"
+                    return
+                }
+                else {
+                    Disconnect-Graph | Out-Null
+                }
             }
         }
-        else{
-            if($objCurrentMgContext.TenantId -eq $strDevTenantId){
-                Write-Verbose "Already Connected to Development Environment"
-                return
-            }
-            else {
-                Disconnect-Graph | Out-Null
-            }
+        catch {
+            Write-Verbose "Tested current context with $($tokenTesting.DisplayName) and it is not valid."
+            Write-Verbose "Unable to get user from current context. Disconnecting and continuing"
+            Disconnect-Graph | Out-Null
         }
     }
 
