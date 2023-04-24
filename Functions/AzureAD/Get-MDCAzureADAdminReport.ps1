@@ -82,7 +82,7 @@ Function Get-MDCAzureADAdminReport {
                             $psobjRoles += [PSCustomObject]@{
                                 RoleType = "AAD"
                                 RoleName = $role.DisplayName
-                                MembershipType = "Group - $($role.DisplayName)"
+                                MembershipType = "Group - $($member.DisplayName)"
                                 MemberName = $groupMember.AdditionalProperties.displayName
                                 MemberUPN = $groupMember.AdditionalProperties.userPrincipalName
                                 MemberObjId = $groupMember.ObjectId
@@ -100,7 +100,7 @@ Function Get-MDCAzureADAdminReport {
                     $psobjRoles += [PSCustomObject]@{
                         RoleType = "AAD"
                         RoleName = $role.DisplayName
-                        MembershipType = $roleAssignment.ObjectType
+                        MembershipType = $memberType
                         MemberName = $member.AdditionalProperties.displayName
                         MemberUPN = $member.AdditionalProperties.userPrincipalName
                         MemberObjId = $roleAssignment.ObjectId
@@ -134,5 +134,6 @@ Function Get-MDCAzureADAdminReport {
     Write-Verbose "Operation Completed. Returning array of permissions"
     return $psobjRoles
 }#End Function Get-GetAzureADAdministrators
+Get-MDCAzureADAdminReport
 
 
