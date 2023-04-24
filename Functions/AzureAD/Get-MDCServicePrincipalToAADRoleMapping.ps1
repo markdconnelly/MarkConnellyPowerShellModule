@@ -20,26 +20,36 @@
     Get-ExampleFunction -ExampleParameter "Example" -ExampleParameter2 "Example2" 
 #>
 
-Function Get-MDCApplicationToAADRoleMapping {
+Function Get-MDCServicePrincipalToAADRoleMapping {
     [CmdletBinding()]
     Param (
 
     )
 
-    $arrApplicationServicePrincipals = Get-MDCEnterpriseApplications
-    $psobjAppToRoleMapping = @()
-    foreach($app in $arrApplicationServicePrincipals){
-        $appAADRoles = Get-MgServicePrincipalMemberOf -ServicePrincipalId $app.Id
-        foreach($role in $appAADRoles){
+    # Try to get service principals
+    try {
+        $arrServicePrincipals = Get-MgServicePrincipal -All:$true -ErrorAction Stop `
+            | Where-Object {($_.ServicePrincipalType -eq "Application" -and $_.Tags -eq "WindowsAzureActiveDirectoryIntegratedApp") `
+                         -or $_.ServicePrincipalType -eq "ManagedIdentity"}
+    }
+    catch {
+        Write-Error "Unable to get service principals"
+        return
+    }
+
+    $psobjServicePrincipalToRoleMapping = @()
+    foreach($servicePrincipal in $arrServicePrincipals){
+        $servicePrincipalAADRoles = Get-MgServicePrincipalMemberOf -ServicePrincipalId $app.Id
+        foreach($role in $servicePrincipalAADRoles){
             $memberOfODataType = ""
             $memberOfODataType = $role.AdditionalProperties.'@odata.type'
             if ($memberOfODataType -like "*directoryRole*") {
                 $roleName = ""
                 $roleName = $role.AdditionalProperties.displayName
-                $psobjAppToRoleMapping += [pscustomobject]@{
-                    DisplayName = $app.DisplayName
-                    ServicePrincipal = $app.Id
-                    AppId = $app.AppId
+                $psobjServicePrincipalToRoleMapping += [pscustomobject]@{
+                    DisplayName = $servicePrincipal.DisplayName
+                    ServicePrincipal = $servicePrincipal.Id
+                    AppId = $servicePrincipal.AppId
                     RoleName = $roleName
                     RoleId = $role.Id
                 }
@@ -48,5 +58,5 @@ Function Get-MDCApplicationToAADRoleMapping {
 
     }
 
-    return $psobjAppToRoleMapping 
+    return $psobjServicePrincipalToRoleMapping
 }
