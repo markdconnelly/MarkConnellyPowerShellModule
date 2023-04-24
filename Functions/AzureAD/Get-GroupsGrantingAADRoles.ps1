@@ -23,15 +23,19 @@
 Function Get-GroupsGrantingAADRoles {
     [CmdletBinding()]
     Param (
-        [Parameter(Mandatory=$true,Position=0)]
-        [string]$Variable1,
-        [Parameter(Mandatory=$false,Position=1)]
-        [string]$Variable2 = "Default Value"
+
     )
 
-
-    $arrAAD_Roles = Get-MgDirectoryRole -ErrorAction Stop
-
+    # try to get all AAD roles
+    try {
+        $arrAAD_Roles = Get-MgDirectoryRole -ErrorAction Stop
+    }
+    catch {
+        Write-Error "Unable to get AAD Roles"
+        return
+    }
+    
+    # Loop through each AAD role and collect the members. If the member is a group, populate the group mapping table. 
     $psobjGroupToRoleMapping = @()
     foreach($role in $arrAAD_Roles){
         $arrRoleMembers = Get-MgDirectoryRoleMember -DirectoryRoleId $role.Id -ErrorAction Stop
@@ -42,14 +46,16 @@ Function Get-GroupsGrantingAADRoles {
                 $psobjGroupToRoleMapping += [PSCustomObject]@{
                     GroupID = $member.Id
                     GroupName = $member.AdditionalProperties.displayName
+                    GroupDescription = $member.AdditionalProperties.description
                     RoleID = $role.Id
                     RoleName = $role.DisplayName
+                    RoleDescription = $role.Description
                 }
             }
-
+    
         }
     }
-
-    # Return statement goes here
+    
+    # Return the array of group mappings
     return $psobjGroupToRoleMapping
 }
