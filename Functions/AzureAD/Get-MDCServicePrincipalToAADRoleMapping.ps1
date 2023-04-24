@@ -38,24 +38,54 @@ Function Get-MDCServicePrincipalToAADRoleMapping {
     }
 
     $psobjServicePrincipalToRoleMapping = @()
+    $arrGroupToAADRoleMapping = Get-GroupsGrantingAADRoles
+    $arrGroupsGrantingRoles = $arrGroupToAADRoleMapping.GroupName
     foreach($servicePrincipal in $arrServicePrincipals){
         $servicePrincipalAADRoles = Get-MgServicePrincipalMemberOf -ServicePrincipalId $app.Id
-        foreach($role in $servicePrincipalAADRoles){
-            $memberOfODataType = ""
-            $memberOfODataType = $role.AdditionalProperties.'@odata.type'
-            if ($memberOfODataType -like "*directoryRole*") {
+        if($null -ne $servicePrincipalAADRoles){
+            foreach($role in $servicePrincipalAADRoles){
+                $memberOfODataType = ""
+                $memberOfODataType = $role.AdditionalProperties.'@odata.type'
                 $roleName = ""
                 $roleName = $role.AdditionalProperties.displayName
-                $psobjServicePrincipalToRoleMapping += [pscustomobject]@{
-                    DisplayName = $servicePrincipal.DisplayName
-                    ServicePrincipal = $servicePrincipal.Id
-                    AppId = $servicePrincipal.AppId
-                    RoleName = $roleName
-                    RoleId = $role.Id
+                $roleDescription = ""
+                $roleDescription = $role.AdditionalProperties.description
+                if ($memberOfODataType -like "*directoryRole*") {
+                    $psobjServicePrincipalToRoleMapping += [pscustomobject]@{
+                        ServicePrincipalType = $servicePrincipal.ServicePrincipalType
+                        DisplayName = $servicePrincipal.DisplayName
+                        ServicePrincipal = $servicePrincipal.Id
+                        AppId = $servicePrincipal.AppId
+                        RoleName = $roleName
+                        RoleDescription = $roleDescription
+                        RoleId = $role.Id
+                        viaGroupName = ""
+                        viaGroupDescription = ""
+                        viaGroupId = ""
+                    }
+                }
+                if($memberOfODataType -like "*group*"){
+                    if($roleName -contains $arrGroupsGrantingRoles){
+                        $groupRoleMemberOf = $arrGroupToAADRoleMapping | Where-Object {$_.GroupName -eq $roleName}
+                        foreach($groupRole in $groupRoleMemberOf){
+                            $pause
+                            $psobjServicePrincipalToRoleMapping += [pscustomobject]@{
+                                ServicePrincipalType = $servicePrincipal.ServicePrincipalType
+                                DisplayName = $servicePrincipal.DisplayName
+                                ServicePrincipal = $servicePrincipal.Id
+                                AppId = $servicePrincipal.AppId
+                                RoleName = $groupRoleMemberOf.RoleName
+                                RoleDescription = $groupRoleMemberOf.RoleDescription
+                                RoleId = $groupRoleMemberOf.RoleID
+                                viaGroupName = $groupRoleMemberOf.GroupName
+                                viaGroupDescription = $groupRoleMemberOf.GroupDescription
+                                viaGroupId = $groupRoleMemberOf.GroupID
+                            }
+                        }
+                    }
                 }
             }
         }
-
     }
 
     return $psobjServicePrincipalToRoleMapping
