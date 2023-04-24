@@ -29,13 +29,27 @@ Function Get-GroupsGrantingAADRoles {
         [string]$Variable2 = "Default Value"
     )
 
-    # Function code goes here
-    if($Variable1){
-        Write-Host "Has input"
-    } else {
-        Write-Host "Is null"
+
+    $arrAAD_Roles = Get-MgDirectoryRole -ErrorAction Stop
+
+    $psobjGroupToRoleMapping = @()
+    foreach($role in $arrAAD_Roles){
+        $arrRoleMembers = Get-MgDirectoryRoleMember -DirectoryRoleId $role.Id -ErrorAction Stop
+        foreach($member in $arrRoleMembers){
+            $memberType = ""
+            $memberType = $member.AdditionalProperties.'@odata.type'
+            if($memberType -like "*group*"){
+                $psobjGroupToRoleMapping += [PSCustomObject]@{
+                    GroupID = $member.Id
+                    GroupName = $member.AdditionalProperties.displayName
+                    RoleID = $role.Id
+                    RoleName = $role.DisplayName
+                }
+            }
+
+        }
     }
 
     # Return statement goes here
-    return $Variable2
+    return $psobjGroupToRoleMapping
 }
