@@ -10,7 +10,7 @@
   $psobjServicePrincipalToRoleMapping
 .NOTES
     This is a custom function written by Mark Connelly, so it may not work as intended.
-    Version:        1.1
+    Version:        1.0
     Author:         Mark D. Connelly Jr.
     Last Updated:   04-24-2023
     Creation Date:  04-23-2023
@@ -39,7 +39,7 @@ Function Get-MDCServicePrincipalToAADRoleMapping {
     }
 
     $psobjServicePrincipalToRoleMapping = @()
-    $arrGroupToAADRoleMapping = Get-GroupsGrantingAADRoles
+    $arrGroupToAADRoleMapping = Get-MDCGroupsGrantingAADRoles
     $arrGroupsGrantingRoles = $arrGroupToAADRoleMapping.GroupName
     foreach($servicePrincipal in $arrServicePrincipals){
         $servicePrincipalAADRoles = Get-MgServicePrincipalMemberOf -ServicePrincipalId $app.Id
