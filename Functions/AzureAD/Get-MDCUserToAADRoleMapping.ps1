@@ -39,7 +39,16 @@ Function Get-MDCUserToAADRoleMapping {
     $psobjUserToRoleMapping = @()
     $arrGroupToAADRoleMapping = Get-MDCGroupsGrantingAADRoles
     foreach($user in $arrUsers){
-        $userAADRoles = Get-MgUserMemberOf -UserId $user.Id
+        try {
+            $userAADRoles = Get-MgUserMemberOf -UserId $user.Id
+        }
+        catch {
+            Write-Error "Unable to get service principal membership for $($servicePrincipal.DisplayName)"
+            $objError = $_.Exception.Message
+            Write-Error $objError
+            continue
+        }
+        
         if($null -ne $userAADRoles){
             foreach($role in $userAADRoles){
                 $memberOfODataType = ""
