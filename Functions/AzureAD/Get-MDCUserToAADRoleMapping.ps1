@@ -16,7 +16,7 @@
     Creation Date:  04-24-2023
     Purpose/Change: Initial script development
 .LINK
-    <Link to any relevant documentation>
+    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/AzureAD/Get-MDCUserToAADRoleMapping.ps1
 .EXAMPLE
     $array = Get-MDCUserToAADRoleMapping
 #>
@@ -39,7 +39,16 @@ Function Get-MDCUserToAADRoleMapping {
     $psobjUserToRoleMapping = @()
     $arrGroupToAADRoleMapping = Get-MDCGroupsGrantingAADRoles
     foreach($user in $arrUsers){
-        $userAADRoles = Get-MgUserMemberOf -UserId $user.Id
+        try {
+            $userAADRoles = Get-MgUserMemberOf -UserId $user.Id
+        }
+        catch {
+            $objError = $_.Exception.Message
+            Write-Verbose "Unable to get service principal membership for $($servicePrincipal.DisplayName)"
+            Write-Error $objError
+            continue
+        }
+        
         if($null -ne $userAADRoles){
             foreach($role in $userAADRoles){
                 $memberOfODataType = ""
