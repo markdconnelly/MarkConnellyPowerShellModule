@@ -1,18 +1,19 @@
 <#
 .SYNOPSIS
-    Get an array of groups granting AAD roles
+    Get an array of groups granting AAD roles. Map them to their respective roles.
 .DESCRIPTION
-    <More detailed description of the function>
+    This is a sub function of Get-MDCServicePrincipalToAADRoleMapping and Get-MDCUserToAADRoleMapping that produces a table output 
+    of all groups that grant AAD roles. This group is used to determine inherited permissions for service principals and users.
 .INPUTS
-  <Inputs if any, otherwise state None>
+  None
 .OUTPUTS
-  <Outputs if any, otherwise state None - example: Log file stored in C:\Windows\Temp\<name>.log>
+  $psobjGroupToRoleMapping
 .NOTES
     This is a custom function written by Mark Connelly, so it may not work as intended.
     Version:        1.0
-    Author:         <Name>
-    Last Updated:   <Date>
-    Creation Date:  <Date>
+    Author:         Mark D. Connelly Jr.
+    Last Updated:   04-24-2023
+    Creation Date:  04-23-2023
     Purpose/Change: Initial script development
 .LINK
     <Link to any relevant documentation>
@@ -20,7 +21,7 @@
     Get-ExampleFunction -ExampleParameter "Example" -ExampleParameter2 "Example2" 
 #>
 
-Function Get-GroupsGrantingAADRoles {
+Function Get-MDCGroupsGrantingAADRoles {
     [CmdletBinding()]
     Param (
 

@@ -1,23 +1,24 @@
 <#
 .SYNOPSIS
-    Creates an Azure AD role mapping table for all applications in the tenant.
+    Creates an Azure AD role mapping table for all applications in the tenant. If a service principal is a member of a group that grants an 
+    AAD role, the details of the permissions along with the group in the table.
 .DESCRIPTION
-    <More detailed description of the function>
+    This is a sub function of {TBD} that produces a table output of all service principal to AAD role mappings.
 .INPUTS
-  <Inputs if any, otherwise state None>
+  None
 .OUTPUTS
-  <Outputs if any, otherwise state None - example: Log file stored in C:\Windows\Temp\<name>.log>
+  $psobjServicePrincipalToRoleMapping
 .NOTES
     This is a custom function written by Mark Connelly, so it may not work as intended.
     Version:        1.0
     Author:         Mark D. Connelly Jr.
-    Last Updated:   <Date>
-    Creation Date:  <Date>
+    Last Updated:   04-24-2023
+    Creation Date:  04-23-2023
     Purpose/Change: Initial script development
 .LINK
-    <Link to any relevant documentation>
+    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/AzureAD/Get-MDCServicePrincipalToAADRoleMapping.ps1
 .EXAMPLE
-    Get-ExampleFunction -ExampleParameter "Example" -ExampleParameter2 "Example2" 
+    $array = Get-MDCServicePrincipalToAADRoleMapping 
 #>
 
 Function Get-MDCServicePrincipalToAADRoleMapping {
@@ -38,7 +39,7 @@ Function Get-MDCServicePrincipalToAADRoleMapping {
     }
 
     $psobjServicePrincipalToRoleMapping = @()
-    $arrGroupToAADRoleMapping = Get-GroupsGrantingAADRoles
+    $arrGroupToAADRoleMapping = Get-MDCGroupsGrantingAADRoles
     $arrGroupsGrantingRoles = $arrGroupToAADRoleMapping.GroupName
     foreach($servicePrincipal in $arrServicePrincipals){
         $servicePrincipalAADRoles = Get-MgServicePrincipalMemberOf -ServicePrincipalId $app.Id
@@ -65,21 +66,19 @@ Function Get-MDCServicePrincipalToAADRoleMapping {
                     }
                 }
                 if($memberOfODataType -like "*group*"){
-                    if($roleName -contains $arrGroupsGrantingRoles){
-                        $groupRoleMemberOf = $arrGroupToAADRoleMapping | Where-Object {$_.GroupName -eq $roleName}
-                        foreach($groupRole in $groupRoleMemberOf){
-                            $pause
+                    foreach($group in $arrGroupToAADRoleMapping){
+                        if($group.GroupName -eq $roleName){
                             $psobjServicePrincipalToRoleMapping += [pscustomobject]@{
                                 ServicePrincipalType = $servicePrincipal.ServicePrincipalType
                                 DisplayName = $servicePrincipal.DisplayName
                                 ServicePrincipal = $servicePrincipal.Id
                                 AppId = $servicePrincipal.AppId
-                                RoleName = $groupRoleMemberOf.RoleName
-                                RoleDescription = $groupRoleMemberOf.RoleDescription
-                                RoleId = $groupRoleMemberOf.RoleID
-                                viaGroupName = $groupRoleMemberOf.GroupName
-                                viaGroupDescription = $groupRoleMemberOf.GroupDescription
-                                viaGroupId = $groupRoleMemberOf.GroupID
+                                RoleName = $group.RoleName
+                                RoleDescription = $group.RoleDescription
+                                RoleId = $group.RoleID
+                                viaGroupName = $group.GroupName
+                                viaGroupDescription = $group.GroupDescription
+                                viaGroupId = $group.GroupID
                             }
                         }
                     }
@@ -87,6 +86,5 @@ Function Get-MDCServicePrincipalToAADRoleMapping {
             }
         }
     }
-
     return $psobjServicePrincipalToRoleMapping
 }
