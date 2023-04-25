@@ -159,5 +159,3 @@ Function Get-MDCAzureSubscriptionRoles {
     Write-Verbose "Operation Completed. Returning array of permissions"
     return $psobjSubscriptionRoles
 }
-$array = Get-MDCAzureSubscriptionRoles
-$array.Count
