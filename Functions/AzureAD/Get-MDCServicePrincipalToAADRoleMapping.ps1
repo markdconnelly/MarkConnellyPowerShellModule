@@ -43,7 +43,7 @@ Function Get-MDCServicePrincipalToAADRoleMapping {
     $arrGroupsGrantingRoles = $arrGroupToAADRoleMapping.GroupName
     foreach($servicePrincipal in $arrServicePrincipals){
         try{
-            $servicePrincipalAADRoles = Get-MgServicePrincipalMemberOf -ServicePrincipalId $app.Id
+            $servicePrincipalAADRoles = Get-MgServicePrincipalMemberOf -ServicePrincipalId $servicePrincipal.Id
         }
         catch{
             Write-Verbose "Unable to get service principal membership for $($servicePrincipal.DisplayName)"
