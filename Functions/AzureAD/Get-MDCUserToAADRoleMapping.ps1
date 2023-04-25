@@ -16,7 +16,7 @@
     Creation Date:  04-24-2023
     Purpose/Change: Initial script development
 .LINK
-    <Link to any relevant documentation>
+    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/AzureAD/Get-MDCUserToAADRoleMapping.ps1
 .EXAMPLE
     $array = Get-MDCUserToAADRoleMapping
 #>
