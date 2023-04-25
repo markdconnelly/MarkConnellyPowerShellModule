@@ -29,6 +29,7 @@ Function Get-MDCAzureADAdminReport {
     # Connect to the Microsoft Graph API
     try {
         Write-Verbose "Connecting to Graph"
+        Disconnect-Graph | Out-Null
         Connect-MDCGraphApplication -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop | Out-Null
         Write-Verbose "Connected to Graph"
     }
@@ -48,71 +49,53 @@ Function Get-MDCAzureADAdminReport {
         return
     }
 
-    # Loop through each AAD role and collect the members
-    $role = ""
-    $psobjRoles = @()
-    foreach($role in $arrAAD_Roles){
-        Write-Verbose "Processing $($role.DisplayName)"
-        # For each role, collect the members
-        $arrRoleMembers = @()
-        try {
-            #try: Get-MgDirectoryRoleMember
-            Write-Verbose "Collecting members of $($role.DisplayName)"
-            $arrRoleMembers = Get-MgDirectoryRoleMember -DirectoryRoleId $role.Id -ErrorAction Stop
+    # Set Role Mapping Arrays
+    try {
+        $userRoleMappingArray = Get-MDCUserToAADRoleMapping | Where-Object {$_.RoleName -eq $roleName} -ErrorAction Stop
+        $servicePrincipalRoleMappingArray = Get-MDCServicePrincipalToAADRoleMapping | Where-Object {$_.RoleName -eq $roleName} -ErrorAction Stop
+    }
+    catch {
+        $objError = $Error[0].Exception.Message
+        Write-Error $objError + "Unable to get mapping tables"
+        return
+    }
 
-            # Loop through each member of the role. 
-            $member = ""
-            Write-Verbose "There are $($role.Count) members of $($role.DisplayName)"
-            foreach($member in $arrRoleMembers){
-                Write-Verbose "Processing $($member.AdditionalProperties.displayName)"
-                $memberType = ""
-                $memberType = $member.AdditionalProperties.'@odata.type'
-                # If the member is a group, collect the members of the group
-                if($memberType -like "*group*"){
-                    Write-Verbose "$($member.AdditionalProperties.displayName) is a group"
-                    $arrGroupMembers = @()
-                    try {
-                        #try: Get-MgGroupMember
-                        Write-Verbose "Collecting members of group $($member.AdditionalProperties.displayName)"
-                        $arrGroupMembers = Get-MgGroupMember -GroupId $member.Id -ErrorAction Stop
-                        $groupMember = ""
-                        foreach($groupMember in $arrGroupMembers){
-                            Write-Verbose "Creating an entry for $($groupMember.AdditionalProperties.displayName)"
-                            # For each member, add a new object to the array
-                            $psobjRoles += [PSCustomObject]@{
-                                RoleType = "AAD"
-                                RoleName = $role.DisplayName
-                                MembershipType = "Group - $($role.DisplayName)"
-                                MemberName = $groupMember.AdditionalProperties.displayName
-                                MemberUPN = $groupMember.AdditionalProperties.userPrincipalName
-                                MemberObjId = $groupMember.ObjectId
-                            }
-                        }
-                    }
-                    catch{
-                        #catch: Get-MgGroupMember
-                        $objError = $Error[0].Exception.Message
-                        Write-Host "Unable to get members of group $($member.AdditionalProperties.displayName)" -BackgroundColor Black -ForegroundColor Red
-                        Write-Host $objError -BackgroundColor Black -ForegroundColor Red
-                    }
-                }else{
-                    Write-Verbose "Standard user assignment. Creating entry for $($roleAssignment.DisplayName)"
-                    $psobjRoles += [PSCustomObject]@{
-                        RoleType = "AAD"
-                        RoleName = $role.DisplayName
-                        MembershipType = $roleAssignment.ObjectType
-                        MemberName = $member.AdditionalProperties.displayName
-                        MemberUPN = $member.AdditionalProperties.userPrincipalName
-                        MemberObjId = $roleAssignment.ObjectId
-                    }
-                }
-            }#End foreach($member in $arrRoleMembers)
-        }           
-        catch {
-            #catch: Get-MgDirectoryRoleMember
-            Write-Host "Unable to get members of role $($role.DisplayName)" -BackgroundColor Black -ForegroundColor Red
+    # Loop through each AAD role and collect the members of that role
+    $psobjAzureADAdminReport = @()
+    foreach($role in $arrAAD_Roles){
+        $roleName = ""
+        $roleName = $role.AdditionalProperties.displayName
+        foreach($user in $userRoleMappingArray){
+            $psobjAzureADAdminReport += [PSCustomObject]@{
+                ServicePrincipalType = $user.ServicePrincipalType
+                DisplayName = $user.DisplayName
+                ObjectId = $user.UserId
+                AppIdUPN = $user.UserPrincipalName
+                RoleName = $user.RoleName
+                RoleDescription = $user.RoleDescription
+                RoleId = $user.RoleId
+                viaGroupName = $user.viaGroupName
+                viaGroupDescription = $user.viaGroupDescription
+                viaGroupObjectId = $user.viaGroupObjectId
+            }
         }
-    }#End foreach($role in $arrAAD_Roles)
+        foreach($servicePrincipal in $servicePrincipalRoleMappingArray){
+            $psobjAzureADAdminReport += [PSCustomObject]@{
+                ServicePrincipalType = $servicePrincipal.ServicePrincipalType
+                DisplayName = $servicePrincipal.DisplayName
+                ObjectId = $servicePrincipal.ServicePrincipal
+                AppIdUPN = $servicePrincipal.AppId
+                RoleName = $servicePrincipal.RoleName
+                RoleDescription = $servicePrincipal.RoleDescription
+                RoleId = $servicePrincipal.RoleId
+                viaGroupName = $servicePrincipal.viaGroupName
+                viaGroupDescription = $servicePrincipal.viaGroupDescription
+                viaGroupObjectId = $servicePrincipal.viaGroupObjectId
+            }
+        }
+
+    }
+      
 
     # If the ExportPath parameter is passed, export the results to a CSV file
     if($ExportPath){
@@ -132,7 +115,7 @@ Function Get-MDCAzureADAdminReport {
 
     # Return the array of permissions and details
     Write-Verbose "Operation Completed. Returning array of permissions"
-    return $psobjRoles
+    return $psobjAzureADAdminReport
 }#End Function Get-GetAzureADAdministrators
 
 
