@@ -29,6 +29,7 @@ Function Get-MDCAzureADAdminReport {
     # Connect to the Microsoft Graph API
     try {
         Write-Verbose "Connecting to Graph"
+        Disconnect-Graph | Out-Null
         Connect-MDCGraphApplication -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop | Out-Null
         Write-Verbose "Connected to Graph"
     }
@@ -48,17 +49,16 @@ Function Get-MDCAzureADAdminReport {
         return
     }
 
-    # Loop through each AAD role and collect the members
-    $role = ""
-    $psobjRoles = @()
-    foreach($role in $arrAAD_Roles){
-        Write-Verbose "Processing $($role.DisplayName)"
-        # For each role, collect the members
-        $arrRoleMembers = @()
-        try {
-            #try: Get-MgDirectoryRoleMember
-            Write-Verbose "Collecting members of $($role.DisplayName)"
-            $arrRoleMembers = Get-MgDirectoryRoleMember -DirectoryRoleId $role.Id -ErrorAction Stop
+    # Set Role Mapping Arrays
+    try {
+        $userRoleMappingArray = Get-MDCUserToAADRoleMapping | Where-Object {$_.RoleName -eq $roleName} -ErrorAction Stop
+        $servicePrincipalRoleMappingArray = Get-MDCServicePrincipalToAADRoleMapping | Where-Object {$_.RoleName -eq $roleName} -ErrorAction Stop
+    }
+    catch {
+        $objError = $Error[0].Exception.Message
+        Write-Error $objError + "Unable to get mapping tables"
+        return
+    }
 
             # Loop through each member of the role. 
             $member = ""
@@ -112,7 +112,23 @@ Function Get-MDCAzureADAdminReport {
             #catch: Get-MgDirectoryRoleMember
             Write-Host "Unable to get members of role $($role.DisplayName)" -BackgroundColor Black -ForegroundColor Red
         }
-    }#End foreach($role in $arrAAD_Roles)
+        foreach($servicePrincipal in $servicePrincipalRoleMappingArray){
+            $psobjAzureADAdminReport += [PSCustomObject]@{
+                ServicePrincipalType = $servicePrincipal.ServicePrincipalType
+                DisplayName = $servicePrincipal.DisplayName
+                ObjectId = $servicePrincipal.ServicePrincipal
+                AppIdUPN = $servicePrincipal.AppId
+                RoleName = $servicePrincipal.RoleName
+                RoleDescription = $servicePrincipal.RoleDescription
+                RoleId = $servicePrincipal.RoleId
+                viaGroupName = $servicePrincipal.viaGroupName
+                viaGroupDescription = $servicePrincipal.viaGroupDescription
+                viaGroupObjectId = $servicePrincipal.viaGroupObjectId
+            }
+        }
+
+    }
+      
 
     # If the ExportPath parameter is passed, export the results to a CSV file
     if($ExportPath){
@@ -132,7 +148,7 @@ Function Get-MDCAzureADAdminReport {
 
     # Return the array of permissions and details
     Write-Verbose "Operation Completed. Returning array of permissions"
-    return $psobjRoles
+    return $psobjAzureADAdminReport
 }#End Function Get-GetAzureADAdministrators
 Get-MDCAzureADAdminReport
 
