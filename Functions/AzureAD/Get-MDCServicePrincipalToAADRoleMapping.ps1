@@ -46,7 +46,7 @@ Function Get-MDCServicePrincipalToAADRoleMapping {
             $servicePrincipalAADRoles = Get-MgServicePrincipalMemberOf -ServicePrincipalId $app.Id
         }
         catch{
-            Write-Error "Unable to get service principal membership for $($servicePrincipal.DisplayName)"
+            Write-Verbose "Unable to get service principal membership for $($servicePrincipal.DisplayName)"
             $objError = $_.Exception.Message
             Write-Error $objError
             continue
