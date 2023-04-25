@@ -45,6 +45,7 @@ Function Get-MDCAzureSubscriptionRoles {
         return
     }
 
+    $psobjSubscriptionRoles = @()
     # Loop through each subscription and collect role assignments
     foreach($sub in $arrAzureSubscriptions){
         Write-Verbose "Processing subscription $($sub.DisplayName)"
@@ -66,6 +67,13 @@ Function Get-MDCAzureSubscriptionRoles {
                     Write-Verbose "Collecting members of group $($roleAssignment.DisplayName)"
                     $arrGroupMembers = Get-MgGroupMember -GroupId $roleAssignment.ObjectId -ErrorAction Stop
                     $groupMember = ""
+                    $memberType = ""
+                    $memberType = "Group - $($roleAssignment.DisplayName)"
+                    $memberName = ""
+                    $memberName = $groupMember.AdditionalProperties.displayName
+                    $memberUPN = ""
+                    $memberUPN = $groupMember.AdditionalProperties.userPrincipalName
+
                     foreach($groupMember in $arrGroupMembers){
                         # For each member, add a new object to the array
                         Write-Verbose "Creating entry for member $($groupMember.AdditionalProperties.userPrincipalName)"
@@ -76,9 +84,9 @@ Function Get-MDCAzureSubscriptionRoles {
                             ResourceName = $sub.Name
                             ResourceType = "Subscription"
                             RoleName = $roleAssignment.RoleDefinitionName
-                            MemberName = $groupMember.AdditionalProperties.userPrincipalName
-                            MemberType = "Group - $($roleAssignment.DisplayName)"
-                            MemberUpn = $groupMember.AdditionalProperties.userPrincipalName
+                            MemberName = $memberName
+                            MemberType = $memberType
+                            MemberUpnOrAppId = $memberUPN
                             MemberObjId = $roleAssignment.ObjectId
                         }
                     }
@@ -88,7 +96,8 @@ Function Get-MDCAzureSubscriptionRoles {
                     $objError = $Error[0].Exception.Message
                     Write-Host "Unable to get members of group $($roleAssignment.DisplayName)" -BackgroundColor Black -ForegroundColor Red
                     Write-Host $objError -BackgroundColor Black -ForegroundColor Red
-                    Write-Verbose "Creating entry for member $($groupMember.AdditionalProperties.userPrincipalName)"
+                    Write-Verbose "Creating entry for member $($roleAssignment.DisplayName)"
+
                     $psobjSubscriptionRoles += [PSCustomObject]@{
                         RoleType = "Azure"
                         Scope = "Subscription"
@@ -96,25 +105,51 @@ Function Get-MDCAzureSubscriptionRoles {
                         ResourceName = $sub.Name
                         ResourceType = "Subscription"
                         RoleName = $roleAssignment.RoleDefinitionName
-                        MemberName = $groupMember.AdditionalProperties.userPrincipalName
-                        MemberType = "Group - $($roleAssignment.DisplayName)"
-                        MemberUpn = $groupMember.AdditionalProperties.userPrincipalName
+                        MemberName = $roleAssignment.DisplayName
+                        MemberType = $memberType
+                        MemberUpnOrAppId = $roleAssignment.SignInName
                         MemberObjId = $roleAssignment.ObjectId
                     }
                 }
-            }else{ #If role assignment is a user, proceed as normal
-                Write-Verbose "Standard user assignment. Creating entry for $($roleAssignment.DisplayName)"
-                $psobjSubscriptionRoles += [PSCustomObject]@{
-                    RoleType = "Azure"
-                    Scope = "Subscription"
-                    ResourceId = $sub.Id
-                    ResourceType = "Subscription"
-                    ResourceName = $sub.Name
-                    RoleName = $roleAssignment.RoleDefinitionName
-                    MemberName = $roleAssignment.DisplayName
-                    MemberType = $roleAssignment.ObjectType
-                    MemberUpn = $roleAssignment.SignInName
-                    MemberObjId = $roleAssignment.ObjectId
+            }else{ 
+                if($roleAssignment.ObjectType -like "*serviceprincipal*"){
+                    Write-Verbose "Service Principal assignment. Creating entry for $($roleAssignment.ObjectId)"
+                    try {
+                        $servicePrincipal = @()
+                        $servicePrincipal = Get-MgServicePrincipal -ServicePrincipalId $roleAssignment.ObjectId -ErrorAction Stop
+                        $servicePrincipalDisplayName = $servicePrincipal.DisplayName
+                        $servicePrinipalAppId = $servicePrincipal.AppId
+                    }
+                    catch {
+                        Write-Verbose "Unable to get display name for service principal object id:$($roleAssignment.ObjectId)"
+                    }
+                    $psobjSubscriptionRoles += [PSCustomObject]@{
+                        RoleType = "Azure"
+                        Scope = "Subscription"
+                        ResourceId = $sub.Id
+                        ResourceType = "Subscription"
+                        ResourceName = $sub.Name
+                        RoleName = $roleAssignment.RoleDefinitionName
+                        MemberName = $servicePrincipalDisplayName
+                        MemberType = $roleAssignment.ObjectType
+                        MemberUpnOrAppId = $servicePrinipalAppId
+                        MemberObjId = $roleAssignment.ObjectId
+                    }
+                }else{
+                    #If role assignment is a user, proceed as normal
+                    Write-Verbose "Standard user assignment. Creating entry for $($roleAssignment.DisplayName)"
+                    $psobjSubscriptionRoles += [PSCustomObject]@{
+                        RoleType = "Azure"
+                        Scope = "Subscription"
+                        ResourceId = $sub.Id
+                        ResourceType = "Subscription"
+                        ResourceName = $sub.Name
+                        RoleName = $roleAssignment.RoleDefinitionName
+                        MemberName = $roleAssignment.DisplayName
+                        MemberType = $roleAssignment.ObjectType
+                        MemberUpnOrAppId = $roleAssignment.SignInName
+                        MemberObjId = $roleAssignment.ObjectId
+                    }
                 }
             }
         }
@@ -124,3 +159,5 @@ Function Get-MDCAzureSubscriptionRoles {
     Write-Verbose "Operation Completed. Returning array of permissions"
     return $psobjSubscriptionRoles
 }
+$array = Get-MDCAzureSubscriptionRoles
+$array.Count

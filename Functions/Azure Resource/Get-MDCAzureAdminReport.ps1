@@ -30,8 +30,14 @@ Function Get-MDCAzureResourceAdminReport {
     #region Connect to the Azure Resource Manager and Graph API
 
     # Try to connect to the Azure Resource Manager. End if error encountered.
-    Disconnect-AzAccount | Out-Null 
-    Disconnect-MgGraph | Out-Null
+    try {
+        Disconnect-AzAccount | Out-Null 
+        Disconnect-MgGraph | Out-Null
+    }
+    catch {
+        # Do nothing
+    }
+
     try {
         Write-Verbose "Connecting to the Azure Resource Manager"
         Connect-MDCAzApplication -ProductionEnvironment $ProductionEnvironment -ErrorAction Stop | Out-Null
@@ -67,23 +73,34 @@ Function Get-MDCAzureResourceAdminReport {
     }
     catch {
         Write-Error "Unable to collect Azure Management Group roles"
-        # populate the error into the report here
+        $psobjAzureResourceAdminRoleReport += [PSCustomObject]@{
+            RoleType = "Azure"
+            Scope = "Management Group"
+            ResourceId = "N/A"
+            ResourceName = "N/A"
+            ResourceType = "N/A"
+            RoleName = "N/A"
+            MemberName = "N/A"
+            MemberType = "N/A"
+            MemberUPN = "N/A"
+            MemberObjId = "N/A"
+            Error = "Unable to collect Azure Management Group roles"
+        }
     }
     
     # Loop through each management group permission to build the report
     foreach($permission in $arrAzureManagementGroupRoles){
-        #fine tune this psobj assignment
         $psobjAzureResourceAdminRoleReport += [PSCustomObject]@{
             RoleType = "Azure"
-            Scope = "Management Group"
-            ResourceId = $managementGroup.Id
-            ResourceName = $managementGroup.DisplayName
-            ResourceType = "Management Group"
-            RoleName = $roleAssignment.RoleDefinitionName
-            MemberName = $roleAssignment.DisplayName
-            MemberType = $roleAssignment.ObjectType
-            MemberUpn = $roleAssignment.SignInName
-            MemberObjId = $roleAssignment.ObjectId
+            Scope = $permission.Scope
+            ResourceId = $permission.ResourceId
+            ResourceName = $permission.ResourceName
+            ResourceType = $permission.ResourceType
+            RoleName = $permission.RoleName
+            MemberName = $permission.MemberName
+            MemberType = $permission.MemberType
+            MemberUPN = $permission.MemberUpn
+            MemberObjId = $permission.MemberObjId
             Error = ""
         }
     }
@@ -94,28 +111,74 @@ Function Get-MDCAzureResourceAdminReport {
     }
     catch {
         Write-Error "Unable to collect Azure Subscription roles"
-        # populate the error into the report here
+        $psobjAzureResourceAdminRoleReport += [PSCustomObject]@{
+            RoleType = "Azure"
+            Scope = "Subscription"
+            ResourceId = "N/A"
+            ResourceName = "N/A"
+            ResourceType = "N/A"
+            RoleName = "N/A"
+            MemberName = "N/A"
+            MemberType = "N/A"
+            MemberUPN = "N/A"
+            MemberObjId = "N/A"
+            Error = "Unable to collect Azure Subscription roles"
+        }
     }
-
+    
     # Loop through each subscription permission to build the report
     foreach($permission in $arrAzureSubscriptionRoles){
-        #fine tune this psobj assignment
-
+        $psobjAzureResourceAdminRoleReport += [PSCustomObject]@{
+            RoleType = "Azure"
+            Scope = $permission.Scope
+            ResourceId = $permission.ResourceId
+            ResourceName = $permission.ResourceName
+            ResourceType = $permission.ResourceType
+            RoleName = $permission.RoleName
+            MemberName = $permission.MemberName
+            MemberType = $permission.MemberType
+            MemberUPN = $permission.MemberUpn
+            MemberObjId = $permission.MemberObjId
+            Error = ""
+        }
     }
 
     # Try to get permissions at the resource group scope
     try {
-        $arrAzureResourceGroupRoles = Get-MDCAzureResourceGroupRoles -ErrorAction Stop
+        $arrAzureResourceGroupRoles = Get-MDCAzureResourceGroupRoles -Verbose -ErrorAction Stop
     }
     catch {
         Write-Error "Unable to collect Azure Resource Group roles"
-        # populate the error into the report here
+        $psobjAzureResourceAdminRoleReport += [PSCustomObject]@{
+            RoleType = "Azure"
+            Scope = "Resource Group"
+            ResourceId = "N/A"
+            ResourceName = "N/A"
+            ResourceType = "N/A"
+            RoleName = "N/A"
+            MemberName = "N/A"
+            MemberType = "N/A"
+            MemberUPN = "N/A"
+            MemberObjId = "N/A"
+            Error = "Unable to collect Azure Resource Group roles"
+        }
     }
 
     # Loop through each subscription permission to build the report
     foreach($permission in $arrAzureResourceGroupRoles){
-        #fine tune this psobj assignment
-
+        $psobjAzureResourceAdminRoleReport += [PSCustomObject]@{
+            RoleType = "Azure"
+            Scope = $permission.Scope
+            ResourceId = $permission.ResourceId
+            ResourceName = $permission.ResourceName
+            ResourceType = $permission.ResourceType
+            RoleName = $permission.RoleName
+            MemberName = $permission.MemberName
+            MemberType = $permission.MemberType
+            MemberUPN = $permission.MemberUpn
+            MemberObjId = $permission.MemberObjId
+            Error = ""
+        }
     }
 
     # Try to get permissions at the resource scope
@@ -123,14 +186,37 @@ Function Get-MDCAzureResourceAdminReport {
         $arrAzureResourceRoles = Get-MDCAzureResourceRoles -ErrorAction Stop
     }
     catch {
-        Write-Error "Unable to collect Azure Resource Group roles"
-        # populate the error into the report here
+        Write-Error "Unable to collect Azure Resource roles"
+        $psobjAzureResourceAdminRoleReport += [PSCustomObject]@{
+            RoleType = "Azure"
+            Scope = "Resource"
+            ResourceId = "N/A"
+            ResourceName = "N/A"
+            ResourceType = "N/A"
+            RoleName = "N/A"
+            MemberName = "N/A"
+            MemberType = "N/A"
+            MemberUPN = "N/A"
+            MemberObjId = "N/A"
+            Error = "Unable to collect Azure Resource roles"
+        }
     }
 
     # Loop through each subscription permission to build the report
     foreach($permission in $arrAzureResourceRoles){
-        #fine tune this psobj assignment
-
+        $psobjAzureResourceAdminRoleReport += [PSCustomObject]@{
+            RoleType = "Azure"
+            Scope = $permission.Scope
+            ResourceId = $permission.ResourceId
+            ResourceName = $permission.ResourceName
+            ResourceType = $permission.ResourceType
+            RoleName = $permission.RoleName
+            MemberName = $permission.MemberName
+            MemberType = $permission.MemberType
+            MemberUPN = $permission.MemberUpn
+            MemberObjId = $permission.MemberObjId
+            Error = ""
+        }
     }#endregion
 
 
@@ -150,5 +236,5 @@ Function Get-MDCAzureResourceAdminReport {
 
     # Return the array of permissions and details
     Write-Verbose "Operation Completed. Returning array of permissions"
-    return $psobjRoles
+    return $psobjAzureResourceAdminRoleReport
 }
