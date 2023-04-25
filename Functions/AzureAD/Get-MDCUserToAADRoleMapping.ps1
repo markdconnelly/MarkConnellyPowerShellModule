@@ -43,8 +43,8 @@ Function Get-MDCUserToAADRoleMapping {
             $userAADRoles = Get-MgUserMemberOf -UserId $user.Id
         }
         catch {
-            Write-Error "Unable to get service principal membership for $($servicePrincipal.DisplayName)"
             $objError = $_.Exception.Message
+            Write-Verbose "Unable to get service principal membership for $($servicePrincipal.DisplayName)"
             Write-Error $objError
             continue
         }
