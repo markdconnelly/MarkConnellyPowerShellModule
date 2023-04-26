@@ -62,12 +62,12 @@ Function Get-MDCAzureSubscriptionRoles {
             if ($roleAssignment.ObjectType -like "*group*") { #If role assignment is a group, get the members of the group
                 Write-Verbose "$($role.DisplayName) is a group"
                 $arrGroupMembers = @()
+                $memberType = ""
+                $memberType = "Group - $($roleAssignment.DisplayName)"
                 try {
                     #try: Get-MgGroupMember
                     Write-Verbose "Collecting members of group $($roleAssignment.DisplayName)"
                     $arrGroupMembers = Get-MgGroupMember -GroupId $roleAssignment.ObjectId -ErrorAction Stop
-                    $memberType = ""
-                    $memberType = "Group - $($roleAssignment.DisplayName)"
                     foreach($groupMember in $arrGroupMembers){
                         $groupMemberProperties = ""
                         $groupMemberProperties = $groupMember.AdditionalProperties
