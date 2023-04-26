@@ -56,19 +56,27 @@ Function Get-MDCAzureResourceRoles {
     # Loop through each resource and collect role assignments
     foreach($resource in $arrAzureResources){
         Write-Verbose "Processing resource $($resource.Name)"
-        $arrRoleAssignments = @()
-        $arrRoleAssignments = Get-AzRoleAssignment -Scope $resource.ResourceId | Where-Object {$_.Scope -like "*/$($resource.Name)"}
-        foreach($roleAssignment in $arrRoleAssignments){
+        $arrResourceRoleAssignments = @()
+        $arrResourceRoleAssignments = Get-AzRoleAssignment -Scope $resource.ResourceId | Where-Object {$_.Scope -like "*/$($resource.Name)"}
+        foreach($roleAssignment in $arrResourceRoleAssignments){
             Write-Verbose "Processing role assignment for $($roleAssignment.DisplayName) in resource $($resource.Name)"
             if($roleAssignment.ObjectType -like "*group*"){ #If role assignment is a group, get the members of the group
                 Write-Verbose "$($roleAssignment.DisplayName) is a group"
                 $arrGroupMembers = @()
+                $memberType = ""
+                $memberType = "Group - $($roleAssignment.DisplayName)"
                 try{
                     #try: Get-MgGroupMember
                     Write-Verbose "Collecting members of group $($roleAssignment.DisplayName)"
                     $arrGroupMembers = Get-MgGroupMember -GroupId $roleAssignment.ObjectId -ErrorAction Stop
                     $groupMember = ""
                     foreach($groupMember in $arrGroupMembers){
+                        $groupMemberProperties = ""
+                        $groupMemberProperties = $groupMember.AdditionalProperties
+                        $memberName = ""
+                        $memberName = $groupMemberProperties.displayName
+                        $memberUPN = ""
+                        $memberUPN = $groupMemberProperties.userPrincipalName
                         # For each member, add a new object to the array
                         Write-Verbose "Creating entry for member $($groupMember.AdditionalProperties.userPrincipalName)"
                         $psobjResourceRoles += [PSCustomObject]@{
@@ -78,9 +86,9 @@ Function Get-MDCAzureResourceRoles {
                             ResourceName = $resource.ResourceName
                             ResourceType = $resource.ResourceType
                             RoleName = $roleAssignment.RoleDefinitionName
-                            MemberName = $groupMember.AdditionalProperties.userPrincipalName
-                            MemberType = "Group - $($roleAssignment.DisplayName)"
-                            MemberUpn = $groupMember.AdditionalProperties.userPrincipalName
+                            MemberName = $memberName
+                            MemberType = $memberType
+                            MemberUpn = $memberUPN
                             MemberObjId = $roleAssignment.ObjectId
                         }
                     }
@@ -102,19 +110,45 @@ Function Get-MDCAzureResourceRoles {
                         MemberObjId = $role.ObjectId
                     }
                 }
-            }else{ #If role assignment is a user, proceed as normal
-                Write-Verbose "Standard user assignment. Creating entry for $($roleAssignment.DisplayName)"
-                $psobjResourceRoles += [PSCustomObject]@{
-                    RoleType = "Azure"
-                    Scope = "Resource"
-                    ResourceId = $resource.ResourceId
-                    ResourceName = $resource.ResourceName
-                    ResourceType = $resource.ResourceType
-                    RoleName = $role.RoleDefinitionName
-                    MemberName = $role.DisplayName
-                    MemberType = $role.ObjectType
-                    MemberUpn = $role.SignInName
-                    MemberObjId = $role.ObjectId
+            }else{ 
+                if($roleAssignment.ObjectType -like "*serviceprincipal*"){
+                    Write-Verbose "Service Principal assignment. Creating entry for $($roleAssignment.ObjectId)"
+                    try {
+                        $servicePrincipal = @()
+                        $servicePrincipal = Get-MgServicePrincipal -ServicePrincipalId $roleAssignment.ObjectId -ErrorAction Stop
+                        $servicePrincipalDisplayName = $servicePrincipal.DisplayName
+                        $servicePrinipalAppId = $servicePrincipal.AppId
+                    }
+                    catch {
+                        Write-Verbose "Unable to get display name for service principal object id:$($roleAssignment.ObjectId)"
+                    }
+                    $psobjResourceRoles += [PSCustomObject]@{
+                        RoleType = "Azure"
+                        Scope = "Resource"
+                        ResourceId = $resource.ResourceId
+                        ResourceName = $resource.ResourceName
+                        ResourceType = $resource.ResourceType
+                        RoleName = $roleAssignment.RoleDefinitionName
+                        MemberName = $servicePrincipalDisplayName
+                        MemberType = $roleAssignment.ObjectType
+                        MemberUpnOrAppId = $servicePrinipalAppId
+                        MemberObjId = $roleAssignment.ObjectId
+                    }
+                }else{
+                    #If role assignment is a user, proceed as normal
+                    Write-Verbose "Standard user assignment. Creating entry for $($roleAssignment.DisplayName)"
+                    $psobjResourceRoles += [PSCustomObject]@{
+                        RoleType = "Azure"
+                        Scope = "Resource"
+                        ResourceId = $resource.ResourceId
+                        ResourceType = $resource.ResourceType
+                        ResourceName = $resource.ResourceName
+                        RoleName = $roleAssignment.RoleDefinitionName
+                        MemberName = $roleAssignment.DisplayName
+                        MemberType = $roleAssignment.ObjectType
+                        MemberUpnOrAppId = $roleAssignment.SignInName
+                        MemberObjId = $roleAssignment.ObjectId
+                    }
                 }
             }
         }
