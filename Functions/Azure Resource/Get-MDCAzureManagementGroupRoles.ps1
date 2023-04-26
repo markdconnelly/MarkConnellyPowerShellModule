@@ -50,12 +50,20 @@ Function Get-MDCAzureManagementGroupRoles {
         foreach($roleAssignment in $arrManagementGroupRoleAssignments){
             if($roleAssignment.ObjectType -like "*group*"){ #If role assignment is a group, get the members of the group
                 $arrGroupMembers = @()
+                $memberType = ""
+                $memberType = "Group - $($roleAssignment.DisplayName)"
                 try {
                     #try: Get-MgGroupMember
+                    Write-Verbose "Collecting members of group $($roleAssignment.DisplayName)"
                     $arrGroupMembers = Get-MgGroupMember -GroupId $roleAssignment.ObjectId -ErrorAction Stop
-                    $groupMember = ""
                     foreach($groupMember in $arrGroupMembers){
                         # For each member, add a new object to the array
+                        $groupMemberProperties = ""
+                        $groupMemberProperties = $groupMember.AdditionalProperties
+                        $memberName = ""
+                        $memberName = $groupMemberProperties.displayName
+                        $memberUPN = ""
+                        $memberUPN = $groupMemberProperties.userPrincipalName
                         Write-Verbose "Creating entry for member $($groupMember.AdditionalProperties.userPrincipalName)"
                         $psobjManagementGroupRoles += [PSCustomObject]@{
                             RoleType = "Azure"
@@ -64,9 +72,9 @@ Function Get-MDCAzureManagementGroupRoles {
                             ResourceName = $managementGroup.DisplayName
                             ResourceType = "Management Group"
                             RoleName = $roleAssignment.RoleDefinitionName
-                            MemberName = $groupMember.AdditionalProperties.userPrincipalName
-                            MemberType = "Group - $($roleAssignment.DisplayName)"
-                            MemberUpn = $groupMember.AdditionalProperties.userPrincipalName
+                            MemberName = $memberName
+                            MemberType = $memberType
+                            MemberUpn = $memberUPN
                             MemberObjId = $roleAssignment.ObjectId
                         }
                     }
@@ -91,19 +99,45 @@ Function Get-MDCAzureManagementGroupRoles {
                     }
                     
                 }
-            }else{ #If role assignment is a user, proceed as normal
-                Write-Verbose "Standard user assignment. Creating entry for $($roleAssignment.DisplayName)"
-                $psobjManagementGroupRoles += [PSCustomObject]@{
-                    RoleType = "Azure"
-                    Scope = "Management Group"
-                    ResourceId = $managementGroup.Id
-                    ResourceName = $managementGroup.DisplayName
-                    ResourceType = "Management Group"
-                    RoleName = $roleAssignment.RoleDefinitionName
-                    MemberName = $roleAssignment.DisplayName
-                    MemberType = $roleAssignment.ObjectType
-                    MemberUpn = $roleAssignment.SignInName
-                    MemberObjId = $roleAssignment.ObjectId
+            }else{ 
+                if($roleAssignment.ObjectType -like "*serviceprincipal*"){
+                    Write-Verbose "Service Principal assignment. Creating entry for $($roleAssignment.ObjectId)"
+                    try {
+                        $servicePrincipal = @()
+                        $servicePrincipal = Get-MgServicePrincipal -ServicePrincipalId $roleAssignment.ObjectId -ErrorAction Stop
+                        $servicePrincipalDisplayName = $servicePrincipal.DisplayName
+                        $servicePrinipalAppId = $servicePrincipal.AppId
+                    }
+                    catch {
+                        Write-Verbose "Unable to get display name for service principal object id:$($roleAssignment.ObjectId)"
+                    }
+                    $psobjSubscriptionRoles += [PSCustomObject]@{
+                        RoleType = "Azure"
+                        Scope = "Management Group"
+                        ResourceId = $managementGroup.Id
+                        ResourceType = "Management Group"
+                        ResourceName = $managementGroup.DisplayName
+                        RoleName = $roleAssignment.RoleDefinitionName
+                        MemberName = $servicePrincipalDisplayName
+                        MemberType = $roleAssignment.ObjectType
+                        MemberUpnOrAppId = $servicePrinipalAppId
+                        MemberObjId = $roleAssignment.ObjectId
+                    }
+                }else{
+                    #If role assignment is a user, proceed as normal
+                    Write-Verbose "Standard user assignment. Creating entry for $($roleAssignment.DisplayName)"
+                    $psobjSubscriptionRoles += [PSCustomObject]@{
+                        RoleType = "Azure"
+                        Scope = "Management Group"
+                        ResourceId = $managementGroup.Id
+                        ResourceType = "Management Group"
+                        ResourceName = $managementGroup.DisplayName
+                        RoleName = $roleAssignment.RoleDefinitionName
+                        MemberName = $roleAssignment.DisplayName
+                        MemberType = $roleAssignment.ObjectType
+                        MemberUpnOrAppId = $roleAssignment.SignInName
+                        MemberObjId = $roleAssignment.ObjectId
+                    }
                 }
             }
         }
