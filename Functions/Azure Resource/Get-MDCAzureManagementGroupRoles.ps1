@@ -111,7 +111,7 @@ Function Get-MDCAzureManagementGroupRoles {
                     catch {
                         Write-Verbose "Unable to get display name for service principal object id:$($roleAssignment.ObjectId)"
                     }
-                    $psobjSubscriptionRoles += [PSCustomObject]@{
+                    $psobjManagementGroupRoles += [PSCustomObject]@{
                         RoleType = "Azure"
                         Scope = "Management Group"
                         ResourceId = $managementGroup.Id
@@ -126,7 +126,7 @@ Function Get-MDCAzureManagementGroupRoles {
                 }else{
                     #If role assignment is a user, proceed as normal
                     Write-Verbose "Standard user assignment. Creating entry for $($roleAssignment.DisplayName)"
-                    $psobjSubscriptionRoles += [PSCustomObject]@{
+                    $psobjManagementGroupRoles += [PSCustomObject]@{
                         RoleType = "Azure"
                         Scope = "Management Group"
                         ResourceId = $managementGroup.Id
