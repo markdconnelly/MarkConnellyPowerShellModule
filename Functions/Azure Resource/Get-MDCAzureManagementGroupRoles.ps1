@@ -68,7 +68,7 @@ Function Get-MDCAzureManagementGroupRoles {
                         $psobjManagementGroupRoles += [PSCustomObject]@{
                             RoleType = "Azure"
                             Scope = "Management Group"
-                            ResourceId = $managementGroup.GroupId
+                            ResourceId = $managementGroup.Id
                             ResourceName = $managementGroup.DisplayName
                             ResourceType = "Management Group"
                             RoleName = $roleAssignment.RoleDefinitionName
@@ -77,6 +77,7 @@ Function Get-MDCAzureManagementGroupRoles {
                             MemberUpn = $memberUPN
                             MemberObjId = $roleAssignment.ObjectId
                         }
+                        $pause
                     }
                 }
                 catch {
@@ -94,10 +95,10 @@ Function Get-MDCAzureManagementGroupRoles {
                         RoleName = $roleAssignment.RoleDefinitionName
                         MemberName = $roleAssignment.DisplayName
                         MemberType = $roleAssignment.ObjectType
-                        MemberUpn = $roleAssignment.SignInName
+                        MemberUpn = "Unable to resolve members"
                         MemberObjId = $roleAssignment.ObjectId
                     }
-                    
+                    $pause
                 }
             }else{ 
                 if($roleAssignment.ObjectType -like "*serviceprincipal*"){
