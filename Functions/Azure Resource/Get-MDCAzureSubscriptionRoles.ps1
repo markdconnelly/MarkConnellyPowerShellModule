@@ -68,6 +68,7 @@ Function Get-MDCAzureSubscriptionRoles {
                     #try: Get-MgGroupMember
                     Write-Verbose "Collecting members of group $($roleAssignment.DisplayName)"
                     $arrGroupMembers = Get-MgGroupMember -GroupId $roleAssignment.ObjectId -ErrorAction Stop
+                    $groupMember = ""
                     foreach($groupMember in $arrGroupMembers){
                         $groupMemberProperties = ""
                         $groupMemberProperties = $groupMember.AdditionalProperties
