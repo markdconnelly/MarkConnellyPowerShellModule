@@ -55,9 +55,9 @@ Function Get-MDCAzureSubscriptionRoles {
         Set-AzContext -SubscriptionId $sub.Id | Out-Null
 
         # Collect role assignments at the subscription scope
-        $arrRoleAssignments = @()
-        $arrRoleAssignments = Get-AzRoleAssignment | Where-Object {$_.Scope -eq "/subscriptions/$($sub.Id)"}
-        foreach($roleAssignment in $arrRoleAssignments){
+        $arrSubscriptionRoleAssignments = @()
+        $arrSubscriptionRoleAssignments = Get-AzRoleAssignment | Where-Object {$_.Scope -eq "/subscriptions/$($sub.Id)"}
+        foreach($roleAssignment in $arrSubscriptionRoleAssignments){
             Write-Verbose "Processing role assignment for $($roleAssignment.DisplayName) in subscription $($sub.DisplayName)"
             if ($roleAssignment.ObjectType -like "*group*") { #If role assignment is a group, get the members of the group
                 Write-Verbose "$($role.DisplayName) is a group"
@@ -97,7 +97,6 @@ Function Get-MDCAzureSubscriptionRoles {
                     Write-Host "Unable to get members of group $($roleAssignment.DisplayName)" -BackgroundColor Black -ForegroundColor Red
                     Write-Host $objError -BackgroundColor Black -ForegroundColor Red
                     Write-Verbose "Creating entry for member $($roleAssignment.DisplayName)"
-
                     $psobjSubscriptionRoles += [PSCustomObject]@{
                         RoleType = "Azure"
                         Scope = "Subscription"
