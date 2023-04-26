@@ -159,4 +159,3 @@ Function Get-MDCAzureSubscriptionRoles {
     Write-Verbose "Operation Completed. Returning array of permissions"
     return $psobjSubscriptionRoles
 }
-Get-MDCAzureSubscriptionRoles -Verbose
