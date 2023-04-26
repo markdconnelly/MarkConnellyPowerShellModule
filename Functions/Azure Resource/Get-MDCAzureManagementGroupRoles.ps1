@@ -77,7 +77,6 @@ Function Get-MDCAzureManagementGroupRoles {
                             MemberUpn = $memberUPN
                             MemberObjId = $roleAssignment.ObjectId
                         }
-                        $pause
                     }
                 }
                 catch {
@@ -98,7 +97,6 @@ Function Get-MDCAzureManagementGroupRoles {
                         MemberUpn = "Unable to resolve members"
                         MemberObjId = $roleAssignment.ObjectId
                     }
-                    $pause
                 }
             }else{ 
                 if($roleAssignment.ObjectType -like "*serviceprincipal*"){
