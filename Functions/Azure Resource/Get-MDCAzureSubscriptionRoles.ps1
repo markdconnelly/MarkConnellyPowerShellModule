@@ -66,15 +66,15 @@ Function Get-MDCAzureSubscriptionRoles {
                     #try: Get-MgGroupMember
                     Write-Verbose "Collecting members of group $($roleAssignment.DisplayName)"
                     $arrGroupMembers = Get-MgGroupMember -GroupId $roleAssignment.ObjectId -ErrorAction Stop
-                    $groupMember = ""
                     $memberType = ""
                     $memberType = "Group - $($roleAssignment.DisplayName)"
-                    $memberName = ""
-                    $memberName = $groupMember.AdditionalProperties.displayName
-                    $memberUPN = ""
-                    $memberUPN = $groupMember.AdditionalProperties.userPrincipalName
-
                     foreach($groupMember in $arrGroupMembers){
+                        $groupMemberProperties = ""
+                        $groupMemberProperties = $groupMember.AdditionalProperties
+                        $memberName = ""
+                        $memberName = $groupMemberProperties.displayName
+                        $memberUPN = ""
+                        $memberUPN = $groupMemberProperties.userPrincipalName
                         # For each member, add a new object to the array
                         Write-Verbose "Creating entry for member $($groupMember.AdditionalProperties.userPrincipalName)"
                         $psobjSubscriptionRoles += [PSCustomObject]@{
@@ -159,3 +159,4 @@ Function Get-MDCAzureSubscriptionRoles {
     Write-Verbose "Operation Completed. Returning array of permissions"
     return $psobjSubscriptionRoles
 }
+Get-MDCAzureSubscriptionRoles -Verbose
