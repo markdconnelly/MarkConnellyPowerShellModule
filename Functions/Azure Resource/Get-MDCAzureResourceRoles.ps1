@@ -40,7 +40,7 @@ Function Get-MDCAzureResourceRoles {
         foreach($sub in $arrAzureSubscriptions){
             Set-AzContext -SubscriptionId $sub.Id | Out-Null
             Write-Verbose "Context set to subscription $($sub.DisplayName)"
-            $arrAzureResources += Get-AzResourceGroup
+            $arrAzureResources += Get-AzResource
             Write-Verbose "Resources collected for subscription $($sub.DisplayName)"
         }
         Write-Verbose "Array of resources populated"
@@ -55,9 +55,9 @@ Function Get-MDCAzureResourceRoles {
     $psobjResourceRoles = @()
     # Loop through each resource and collect role assignments
     foreach($resource in $arrAzureResources){
-        Write-Verbose "Processing resource group $($resource.ResourceGroupName)"
+        Write-Verbose "Processing resource group $($resource.ResourceName)"
         $arrResourceRoleAssignments = @()
-        $arrResourceRoleAssignments = Get-AzRoleAssignment -ResourceGroupName $resource.ResourceGroupName | Where-Object {$_.Scope -like "*/$($resource.Name)"}
+        $arrResourceRoleAssignments = Get-AzRoleAssignment -ResourceName $resource.ResourceName | Where-Object {$_.Scope -like "*/$($resource.Name)"}
         foreach($roleAssignment in $arrResourceRoleAssignments){
             Write-Verbose "Processing role assignment for $($roleAssignment.DisplayName) in resource group $($resource.ResourceGroupName)"
             $memberType = ""
@@ -68,7 +68,7 @@ Function Get-MDCAzureResourceRoles {
                     Write-Verbose "Standard user assignment. Creating entry for $($roleAssignment.DisplayName)"
                     $psobjResourceRoles += [PSCustomObject]@{
                         RoleType = "Azure"
-                        Scope = "Resource Group"
+                        Scope = "Resource"
                         ResourceId = $resource.ResourceId
                         ResourceType = $resource.ResourceType
                         ResourceName = $resource.ResourceGroupName
