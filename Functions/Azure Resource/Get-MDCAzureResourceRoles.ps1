@@ -66,7 +66,7 @@ Function Get-MDCAzureResourceRoles {
                 {$_ -like "*user*"}{
                     #If role assignment is a user, extract user properties and add a new object to the array
                     Write-Verbose "Standard user assignment. Creating entry for $($roleAssignment.DisplayName)"
-                    $psobjResourceGroupRoles += [PSCustomObject]@{
+                    $psobjResourceRoles += [PSCustomObject]@{
                         RoleType = "Azure"
                         Scope = "Resource Group"
                         ResourceId = $resource.ResourceId
@@ -92,7 +92,7 @@ Function Get-MDCAzureResourceRoles {
                         Write-Verbose "Unable to get display name for service principal object id:$($roleAssignment.ObjectId)"
                         $servicePrincipalDisplayName = "Name resolution error for object id:$($roleAssignment.ObjectId)"
                     }
-                    $psobjResourceGroupRoles += [PSCustomObject]@{
+                    $psobjResourceRoles += [PSCustomObject]@{
                         RoleType = "Azure"
                         Scope = "Resource"
                         ResourceId = $resource.ResourceId
@@ -128,7 +128,7 @@ Function Get-MDCAzureResourceRoles {
                             switch($memberType){
                                 {$_ -like "*user*"}{
                                     Write-Verbose "Creating user entry for member $memberUPN"
-                                    $psobjResourceGroupRoles += [PSCustomObject]@{
+                                    $psobjResourceRoles += [PSCustomObject]@{
                                         RoleType = "Azure"
                                         Scope = "Resource"
                                         ResourceId = $resource.ResourceId
@@ -143,7 +143,7 @@ Function Get-MDCAzureResourceRoles {
                                 }
                                 {$_ -like "*group*"}{
                                     Write-Verbose "Creating group entry for member $memberName"
-                                    $psobjResourceGroupRoles += [PSCustomObject]@{
+                                    $psobjResourceRoles += [PSCustomObject]@{
                                         RoleType = "Azure"
                                         Scope = "Resource"
                                         ResourceId = $resource.ResourceId
@@ -162,7 +162,7 @@ Function Get-MDCAzureResourceRoles {
                     catch {
                         Write-Verbose "Unable to get members of group $($roleAssignment.DisplayName)"
                         Write-Verbose "Creating entry for group $($roleAssignment.DisplayName)"
-                        $psobjResourceGroupRoles += [PSCustomObject]@{
+                        $psobjResourceRoles += [PSCustomObject]@{
                             RoleType = "Azure"
                             Scope = "Resource"
                             ResourceId = $resource.ResourceId
@@ -178,7 +178,7 @@ Function Get-MDCAzureResourceRoles {
                 }
                 {$_ -like "*unknown*"}{
                     Write-Verbose "Unknown assignment. Creating entry for $($roleAssignment.ObjectId)"
-                    $psobjResourceGroupRoles += [PSCustomObject]@{
+                    $psobjResourceRoles += [PSCustomObject]@{
                         RoleType = "Azure"
                         Scope = "Resource"
                         ResourceId = $resource.ResourceId
