@@ -7,7 +7,7 @@
     This is a custom function written by Mark Connelly, so it may not work as intended.
     Version:        1.0
     Author:         Mark D. Connelly Jr.
-    Last Updated:   04-24-2023 - Mark Connelly
+    Last Updated:   04-27-2023 - Mark Connelly
     Creation Date:  04-24-2023
     Purpose/Change: Initial script development
 .LINK
@@ -55,63 +55,32 @@ Function Get-MDCAzureResourceRoles {
     $psobjResourceRoles = @()
     # Loop through each resource and collect role assignments
     foreach($resource in $arrAzureResources){
-        Write-Verbose "Processing resource $($resource.Name)"
+        Write-Verbose "Processing resource group $($resource.ResourceGroupName)"
         $arrResourceRoleAssignments = @()
-        $arrResourceRoleAssignments = Get-AzRoleAssignment -Scope $resource.ResourceId | Where-Object {$_.Scope -like "*/$($resource.Name)"}
+        $arrResourceRoleAssignments = Get-AzRoleAssignment -ResourceGroupName $resource.ResourceGroupName | Where-Object {$_.Scope -like "*/$($resource.Name)"}
         foreach($roleAssignment in $arrResourceRoleAssignments){
-            Write-Verbose "Processing role assignment for $($roleAssignment.DisplayName) in resource $($resource.Name)"
-            if($roleAssignment.ObjectType -like "*group*"){ #If role assignment is a group, get the members of the group
-                Write-Verbose "$($roleAssignment.DisplayName) is a group"
-                $arrGroupMembers = @()
-                $memberType = ""
-                $memberType = "Group - $($roleAssignment.DisplayName)"
-                try{
-                    #try: Get-MgGroupMember
-                    Write-Verbose "Collecting members of group $($roleAssignment.DisplayName)"
-                    $arrGroupMembers = Get-MgGroupMember -GroupId $roleAssignment.ObjectId -ErrorAction Stop
-                    $groupMember = ""
-                    foreach($groupMember in $arrGroupMembers){
-                        $groupMemberProperties = ""
-                        $groupMemberProperties = $groupMember.AdditionalProperties
-                        $memberName = ""
-                        $memberName = $groupMemberProperties.displayName
-                        $memberUPN = ""
-                        $memberUPN = $groupMemberProperties.userPrincipalName
-                        # For each member, add a new object to the array
-                        Write-Verbose "Creating entry for member $($groupMember.AdditionalProperties.userPrincipalName)"
-                        $psobjResourceRoles += [PSCustomObject]@{
-                            RoleType = "Azure"
-                            Scope = "Resource"
-                            ResourceId = $resource.ResourceId
-                            ResourceName = $resource.ResourceName
-                            ResourceType = $resource.ResourceType
-                            RoleName = $roleAssignment.RoleDefinitionName
-                            MemberName = $memberName
-                            MemberType = $memberType
-                            MemberUpn = $memberUPN
-                            MemberObjId = $roleAssignment.ObjectId
-                        }
-                    }
-                }catch{
-                    #catch: Get-MgGroupMember
-                    $objError = $Error[0].Exception.Message
-                    Write-Host "Unable to get members of group $($roleAssignment.DisplayName)" -BackgroundColor Black -ForegroundColor Red
-                    Write-Host $objError
-                    $psobjResourceRoles += [PSCustomObject]@{
+            Write-Verbose "Processing role assignment for $($roleAssignment.DisplayName) in resource group $($resource.ResourceGroupName)"
+            $memberType = ""
+            $memberType = $roleAssignment.ObjectType
+            switch($memberType){
+                {$_ -like "*user*"}{
+                    #If role assignment is a user, extract user properties and add a new object to the array
+                    Write-Verbose "Standard user assignment. Creating entry for $($roleAssignment.DisplayName)"
+                    $psobjResourceGroupRoles += [PSCustomObject]@{
                         RoleType = "Azure"
-                        Scope = "Resource"
+                        Scope = "Resource Group"
                         ResourceId = $resource.ResourceId
-                        ResourceName = $resource.ResourceName
                         ResourceType = $resource.ResourceType
-                        RoleName = $role.RoleDefinitionName
-                        MemberName = $role.DisplayName
-                        MemberType = $role.ObjectType
-                        MemberUpn = $role.SignInName
-                        MemberObjId = $role.ObjectId
+                        ResourceName = $resource.ResourceGroupName
+                        RoleName = $roleAssignment.RoleDefinitionName
+                        MemberName = $roleAssignment.DisplayName
+                        MemberType = $memberType
+                        MemberUpnOrAppId = $roleAssignment.SignInName
+                        MemberObjId = $roleAssignment.ObjectId
                     }
                 }
-            }else{ 
-                if($roleAssignment.ObjectType -like "*serviceprincipal*"){
+                {$_ -like "*serviceprincipal*"}{
+                    #If role assignment is a service principal, extract the service principal properties and add a new object to the array
                     Write-Verbose "Service Principal assignment. Creating entry for $($roleAssignment.ObjectId)"
                     try {
                         $servicePrincipal = @()
@@ -121,31 +90,103 @@ Function Get-MDCAzureResourceRoles {
                     }
                     catch {
                         Write-Verbose "Unable to get display name for service principal object id:$($roleAssignment.ObjectId)"
+                        $servicePrincipalDisplayName = "Name resolution error for object id:$($roleAssignment.ObjectId)"
                     }
-                    $psobjResourceRoles += [PSCustomObject]@{
+                    $psobjResourceGroupRoles += [PSCustomObject]@{
                         RoleType = "Azure"
                         Scope = "Resource"
                         ResourceId = $resource.ResourceId
-                        ResourceName = $resource.ResourceName
                         ResourceType = $resource.ResourceType
+                        ResourceName = $resource.ResourceGroupName
                         RoleName = $roleAssignment.RoleDefinitionName
                         MemberName = $servicePrincipalDisplayName
-                        MemberType = $roleAssignment.ObjectType
+                        MemberType = $memberType
                         MemberUpnOrAppId = $servicePrinipalAppId
                         MemberObjId = $roleAssignment.ObjectId
                     }
-                }else{
-                    #If role assignment is a user, proceed as normal
-                    Write-Verbose "Standard user assignment. Creating entry for $($roleAssignment.DisplayName)"
-                    $psobjResourceRoles += [PSCustomObject]@{
+                }
+                {$_ -like "*group*"}{
+                    #If role assignment is a group, loop through each member and create an entry with their properties in the array and add it to the object
+                    Write-Verbose "Group assignment. Getting members for $($roleAssignment.DisplayName)"
+                    $arrGroupMembers = @()
+                    $memberType = "Group - $($roleAssignment.DisplayName)"
+
+                    # try to get group members
+                    try {
+                        Write-Verbose "Collecting members of group $($roleAssignment.DisplayName)"
+                        $arrGroupMembers = Get-MgGroupTransitiveMember -GroupId $roleAssignment.ObjectId -ErrorAction Stop
+                        $groupMember = ""
+                        # if you can get the group members, loop through each member, evaluate what type of object it is, and add a record to the array
+                        foreach($groupMember in $arrGroupMembers){
+                            $groupMemberProperties = ""
+                            $groupMemberProperties = $groupMember.AdditionalProperties
+                            $memberType = ""
+                            $memberType = $groupMemberProperties.'@odata.type'
+                            $memberName = $groupMemberProperties.displayName
+                            $memberUPN = ""
+                            $memberUPN = $groupMemberProperties.userPrincipalName
+                            switch($memberType){
+                                {$_ -like "*user*"}{
+                                    Write-Verbose "Creating user entry for member $memberUPN"
+                                    $psobjResourceGroupRoles += [PSCustomObject]@{
+                                        RoleType = "Azure"
+                                        Scope = "Resource"
+                                        ResourceId = $resource.ResourceId
+                                        ResourceName = $resource.ResourceGroupName
+                                        ResourceType = $resource.ResourceType
+                                        RoleName = $roleAssignment.RoleDefinitionName
+                                        MemberName = $memberName
+                                        MemberType = "User"
+                                        MemberUpnOrAppId = $memberUPN
+                                        MemberObjId = $roleAssignment.ObjectId
+                                    }
+                                }
+                                {$_ -like "*group*"}{
+                                    Write-Verbose "Creating group entry for member $memberName"
+                                    $psobjResourceGroupRoles += [PSCustomObject]@{
+                                        RoleType = "Azure"
+                                        Scope = "Resource"
+                                        ResourceId = $resource.ResourceId
+                                        ResourceName = $resource.ResourceGroupName
+                                        ResourceType = $resource.ResourceType
+                                        RoleName = $roleAssignment.RoleDefinitionName
+                                        MemberName = $memberName
+                                        MemberType = "Group"
+                                        MemberUpnOrAppId = $memberName
+                                        MemberObjId = $roleAssignment.ObjectId
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch {
+                        Write-Verbose "Unable to get members of group $($roleAssignment.DisplayName)"
+                        Write-Verbose "Creating entry for group $($roleAssignment.DisplayName)"
+                        $psobjResourceGroupRoles += [PSCustomObject]@{
+                            RoleType = "Azure"
+                            Scope = "Resource"
+                            ResourceId = $resource.ResourceId
+                            ResourceName = $resource.ResourceGroupName
+                            ResourceType = $resource.ResourceType
+                            RoleName = $roleAssignment.RoleDefinitionName
+                            MemberName = $roleAssignment.DisplayName
+                            MemberType = "Group - Unable to get members"
+                            MemberUpnOrAppId = $roleAssignment.SignInName
+                            MemberObjId = $roleAssignment.ObjectId
+                        }
+                    }
+                }
+                {$_ -like "*unknown*"}{
+                    Write-Verbose "Unknown assignment. Creating entry for $($roleAssignment.ObjectId)"
+                    $psobjResourceGroupRoles += [PSCustomObject]@{
                         RoleType = "Azure"
                         Scope = "Resource"
                         ResourceId = $resource.ResourceId
+                        ResourceName = $resource.ResourceGroupName
                         ResourceType = $resource.ResourceType
-                        ResourceName = $resource.ResourceName
                         RoleName = $roleAssignment.RoleDefinitionName
                         MemberName = $roleAssignment.DisplayName
-                        MemberType = $roleAssignment.ObjectType
+                        MemberType = "Unknown"
                         MemberUpnOrAppId = $roleAssignment.SignInName
                         MemberObjId = $roleAssignment.ObjectId
                     }
@@ -153,7 +194,6 @@ Function Get-MDCAzureResourceRoles {
             }
         }
     }
-
     # Return the array of permissions and details
     Write-Verbose "Operation Completed. Returning array of permissions"
     return $psobjResourceRoles
