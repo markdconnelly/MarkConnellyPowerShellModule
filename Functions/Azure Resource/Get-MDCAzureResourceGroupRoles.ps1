@@ -136,7 +136,7 @@ Function Get-MDCAzureResourceGroupRoles {
                                         ResourceType = "Resource Group"
                                         RoleName = $roleAssignment.RoleDefinitionName
                                         MemberName = $memberName
-                                        MemberType = $memberType
+                                        MemberType = "User"
                                         MemberUpnOrAppId = $memberUPN
                                         MemberObjId = $roleAssignment.ObjectId
                                     }
@@ -151,7 +151,7 @@ Function Get-MDCAzureResourceGroupRoles {
                                         ResourceType = "Resource Group"
                                         RoleName = $roleAssignment.RoleDefinitionName
                                         MemberName = $memberName
-                                        MemberType = $memberType
+                                        MemberType = "Group"
                                         MemberUpnOrAppId = $memberName
                                         MemberObjId = $roleAssignment.ObjectId
                                     }
@@ -171,9 +171,24 @@ Function Get-MDCAzureResourceGroupRoles {
                             RoleName = $roleAssignment.RoleDefinitionName
                             MemberName = $roleAssignment.DisplayName
                             MemberType = "Group - Unable to get members"
-                            MemberUpn = $roleAssignment.SignInName
+                            MemberUpnOrAppId = $roleAssignment.SignInName
                             MemberObjId = $roleAssignment.ObjectId
                         }
+                    }
+                }
+                {$_ -like "*unknown*"}{
+                    Write-Verbose "Unknown assignment. Creating entry for $($roleAssignment.ObjectId)"
+                    $psobjResourceGroupRoles += [PSCustomObject]@{
+                        RoleType = "Azure"
+                        Scope = "Resource Group"
+                        ResourceId = $rg.ResourceId
+                        ResourceName = $rg.ResourceGroupName
+                        ResourceType = "Resource Group"
+                        RoleName = $roleAssignment.RoleDefinitionName
+                        MemberName = $roleAssignment.DisplayName
+                        MemberType = "Unknown"
+                        MemberUpnOrAppId = $roleAssignment.SignInName
+                        MemberObjId = $roleAssignment.ObjectId
                     }
                 }
             }
@@ -184,5 +199,3 @@ Function Get-MDCAzureResourceGroupRoles {
     Write-Verbose "Operation Completed. Returning array of permissions"
     return $psobjResourceGroupRoles
 }
-
-Get-MDCAzureResourceGroupRoles -Verbose
