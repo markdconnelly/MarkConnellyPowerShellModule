@@ -7,9 +7,9 @@
     This is a custom function written by Mark Connelly, so it may not work as intended.
     Version:        1.0
     Author:         Mark D. Connelly Jr.
-    Last Updated:   04-24-2023 - Mark Connelly
+    Last Updated:   04-28-2023 - Mark Connelly
     Creation Date:  04-24-2023
-    Purpose/Change: Initial script development
+    Purpose/Change: Updated logic to use switch statements instead of if statements. Added additional comments and corrected verbose logging.
 .LINK
     #
 .EXAMPLE
@@ -25,8 +25,12 @@ Function Get-MDCAzureResourceGroupRoles {
     # Check the current connections to Azure and M365. If not connected, stop the function.
     $currentAzContext = Get-AzContext
     $currentMgContext = Get-MgContext
-    if($null -eq $currentAzContext -or $null -eq $currentMgContext){
-        Write-Error "Not connected to the cloud. Please connect to the cloud before running this function."
+    if($null -eq $currentAzContext){
+        Write-Error "Not connected to the Azure Resource Manager. Please connect before running this function."
+        return
+    }
+    if($null -eq $currentMgContext){
+        Write-Error "Not connected to the Microsoft Graph. Please connect before running this function."
         return
     }
 
