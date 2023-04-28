@@ -198,7 +198,7 @@ Function Get-MDCAzureResourceRoles {
                             MemberName = $roleAssignmentDisplayName
                             MemberType = "Group - Unable to get members"
                             MemberUpnOrAppId = $roleAssignment.SignInName
-                            MemberObjId = $roleAssignment.ObjectId
+                            MemberObjId = $roleAssignmentObjectId
                         }
                     }
                     ;Break
