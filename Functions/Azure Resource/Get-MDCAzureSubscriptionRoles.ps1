@@ -39,7 +39,7 @@ Function Get-MDCAzureSubscriptionRoles {
 
     # Try to collect subscriptions. End if error encountered.
     try {
-        $arrAzureSubscriptions = Get-AzSubscription -ErrorAction Stop
+        $arrAzureSubscriptions = Get-AzSubscription -ErrorAction Stop | Where-Object {$_.State -eq "Enabled"}
         Write-Verbose "Subscriptions collected"
     }
     catch {
@@ -57,7 +57,7 @@ Function Get-MDCAzureSubscriptionRoles {
         $resourceName = ""
         $resourceId = $sub.Id
         $resourceType = "Subscription"
-        $resourceName = $sub.DisplayName
+        $resourceName = $sub.Name
 
         Write-Verbose "Processing subscription $resourceName"
 
@@ -192,9 +192,9 @@ Function Get-MDCAzureSubscriptionRoles {
                             ResourceName = $resourceName
                             ResourceType = $resourceType
                             RoleName = $roleAssignment.RoleDefinitionName
-                            MemberName = $servicePrincipalDisplayName
+                            MemberName = $roleAssignmentDisplayName
                             MemberType = "Group - Unable to get members"
-                            MemberUpnOrAppId = $servicePrinipalAppId
+                            MemberUpnOrAppId = $roleAssignment.SignInName
                             MemberObjId = $roleAssignmentObjectId
                         }
                     }
