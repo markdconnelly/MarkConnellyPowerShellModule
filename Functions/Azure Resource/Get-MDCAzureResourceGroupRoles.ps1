@@ -161,36 +161,38 @@ Function Get-MDCAzureResourceGroupRoles {
                                         MemberUpnOrAppId = $memberUPN
                                         MemberObjId = $roleAssignmentObjectId
                                     }
+                                    ;Break
                                 }
                                 {$_ -like "*group*"}{
                                     Write-Verbose "Creating group entry for member $memberName"
                                     $psobjResourceGroupRoles += [PSCustomObject]@{
                                         RoleType = "Azure"
                                         Scope = "Resource Group"
-                                        ResourceId = $rg.ResourceId
-                                        ResourceName = $rg.ResourceGroupName
-                                        ResourceType = "Resource Group"
+                                        ResourceId = $resourceId
+                                        ResourceName = $resourceName
+                                        ResourceType = $resourceType
                                         RoleName = $roleAssignment.RoleDefinitionName
                                         MemberName = $memberName
-                                        MemberType = "Group"
+                                        MemberType = $viaGroupName
                                         MemberUpnOrAppId = $memberName
-                                        MemberObjId = $roleAssignment.ObjectId
+                                        MemberObjId = $memberObjId
                                     }
+                                    ;Break
                                 }
                             }
                         }
                     }
                     catch {
-                        Write-Verbose "Unable to get members of group $($roleAssignment.DisplayName)"
-                        Write-Verbose "Creating entry for group $($roleAssignment.DisplayName)"
+                        Write-Verbose "Unable to get members of group $roleAssignmentDisplayName"
+                        Write-Verbose "Creating entry for group $roleAssignmentDisplayName"
                         $psobjResourceGroupRoles += [PSCustomObject]@{
                             RoleType = "Azure"
                             Scope = "Resource Group"
-                            ResourceId = $rg.ResourceId
-                            ResourceName = $rg.ResourceGroupName
-                            ResourceType = "Resource Group"
+                            ResourceId = $resourceId
+                            ResourceName = $resourceName
+                            ResourceType = $resourceType
                             RoleName = $roleAssignment.RoleDefinitionName
-                            MemberName = $roleAssignment.DisplayName
+                            MemberName = $roleAssignmentDisplayName
                             MemberType = "Group - Unable to get members"
                             MemberUpnOrAppId = $roleAssignment.SignInName
                             MemberObjId = $roleAssignment.ObjectId
@@ -202,14 +204,14 @@ Function Get-MDCAzureResourceGroupRoles {
                     $psobjResourceGroupRoles += [PSCustomObject]@{
                         RoleType = "Azure"
                         Scope = "Resource Group"
-                        ResourceId = $rg.ResourceId
-                        ResourceName = $rg.ResourceGroupName
-                        ResourceType = "Resource Group"
+                        ResourceId = $resourceId
+                        ResourceName = $resourceName
+                        ResourceType = $resourceType
                         RoleName = $roleAssignment.RoleDefinitionName
-                        MemberName = $roleAssignment.DisplayName
+                        MemberName = $roleAssignmentDisplayName
                         MemberType = "Unknown"
                         MemberUpnOrAppId = $roleAssignment.SignInName
-                        MemberObjId = $roleAssignment.ObjectId
+                        MemberObjId = $roleAssignmentObjectId
                     }
                 }
             }
