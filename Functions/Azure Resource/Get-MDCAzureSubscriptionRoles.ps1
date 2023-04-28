@@ -88,18 +88,78 @@ Function Get-MDCAzureSubscriptionRoles {
                         ResourceType = $resourceType
                         RoleName = $roleAssignment.RoleDefinitionName
                         MemberName = $roleAssignmentDisplayName
-                        MemberType = $memberType
+                        MemberType = "User"
                         MemberUpnOrAppId = $roleAssignment.SignInName
                         MemberObjId = $roleAssignmentObjectId
                     }
                     ;Break
                 }
                 {$_ -like "*serviceprincipal*"}{
-                    Write-Verbose "Group"
+                    #If role assignment is a service principal, extract the service principal properties and add a new object to the array
+                    Write-Verbose "Service Principal assignment. Creating entry for $roleAssignmentObjectId"
+                    try {
+                        $servicePrincipal = @()
+                        $servicePrincipalDisplayName = ""
+                        $servicePrinipalAppId = ""
+                        $servicePrincipal = Get-MgServicePrincipal -ServicePrincipalId $roleAssignmentObjectId -ErrorAction Stop
+                        $servicePrincipalDisplayName = $servicePrincipal.DisplayName
+                        $servicePrinipalAppId = $servicePrincipal.AppId
+                    }
+                    catch {
+                        Write-Verbose "Unable to get display name for service principal object id:$roleAssignmentObjectId"
+                        $servicePrincipalDisplayName = "Name resolution error for object id:$roleAssignmentObjectId"
+                    }
+                    $psobjSubscriptionRoles += [PSCustomObject]@{
+                        RoleType = "Azure"
+                        Scope = "Subscription"
+                        ResourceId = $resourceId
+                        ResourceName = $resourceName
+                        ResourceType = $resourceType
+                        RoleName = $roleAssignment.RoleDefinitionName
+                        MemberName = $servicePrincipalDisplayName
+                        MemberType = "Service Principal"
+                        MemberUpnOrAppId = $servicePrinipalAppId
+                        MemberObjId = $roleAssignmentObjectId
+                    }
                     ;Break
                 }
                 {$_ -like "*group*"}{
-                    Write-Verbose "Group"
+                    #If role assignment is a group, loop through each member and create an entry with their properties in the array and add it to the object
+                    Write-Verbose "Group assignment. Getting members for $roleAssignmentDisplayName"
+                    $arrGroupMembers = @()
+                    $viaGroupName = "Group - $roleAssignmentDisplayName"
+
+                    # try to get group members
+                    try {
+                        Write-Verbose "Collecting members of group $roleAssignmentDisplayName"
+                        $arrGroupMembers = Get-MgGroupTransitiveMember -GroupId $roleAssignmentObjectId -ErrorAction Stop
+                        $groupMember = ""
+                        # if you can get the group members, loop through each member, evaluate what type of object it is, and add a record to the array
+
+
+
+                    }
+                    catch {
+                        Write-Verbose "Unable to get members of group $roleAssignmentDisplayName"
+                        Write-Verbose "Creating entry for group $roleAssignmentDisplayName"
+                        $psobjSubscriptionRoles += [PSCustomObject]@{
+                            RoleType = "Azure"
+                            Scope = "Subscription"
+                            ResourceId = $resourceId
+                            ResourceName = $resourceName
+                            ResourceType = $resourceType
+                            RoleName = $roleAssignment.RoleDefinitionName
+                            MemberName = $servicePrincipalDisplayName
+                            MemberType = "Group - Unable to get members"
+                            MemberUpnOrAppId = $servicePrinipalAppId
+                            MemberObjId = $roleAssignmentObjectId
+                        }
+                    }
+
+                    ;Break
+                }
+                {$_ -like "*unknown*"}{
+
                     ;Break
                 }
             }
