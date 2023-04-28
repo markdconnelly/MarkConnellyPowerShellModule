@@ -85,7 +85,32 @@ Function Get-MDCAzureManagementGroupRoles {
                     ;Break
                 }
                 {$_ -like "*serviceprincipal*"}{
-
+                    #If role assignment is a service principal, extract the service principal properties and add a new object to the array
+                    Write-Verbose "Service Principal assignment. Creating entry for $roleAssignmentObjectId"
+                    try {
+                        $servicePrincipal = @()
+                        $servicePrincipalDisplayName = ""
+                        $servicePrinipalAppId = ""
+                        $servicePrincipal = Get-MgServicePrincipal -ServicePrincipalId $roleAssignmentObjectId -ErrorAction Stop
+                        $servicePrincipalDisplayName = $servicePrincipal.DisplayName
+                        $servicePrinipalAppId = $servicePrincipal.AppId
+                    }
+                    catch {
+                        Write-Verbose "Unable to get display name for service principal object id:$roleAssignmentObjectId"
+                        $servicePrincipalDisplayName = "Name resolution error for object id:$roleAssignmentObjectId"
+                    }
+                    $psobjManagementGroupRoles += [PSCustomObject]@{
+                        RoleType = "Azure"
+                        Scope = "Management Group"
+                        ResourceId = $mgId
+                        ResourceName = $mgName
+                        ResourceType = "Management Group"
+                        RoleName = $roleAssignment.RoleDefinitionName
+                        MemberName = $memberName
+                        MemberType = $memberType
+                        MemberUpn = $memberUPN
+                        MemberObjId = $roleAssignment.ObjectId
+                    }
                     ;Break
                 }
                 {$_ -like "*group*"}{
