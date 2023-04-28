@@ -74,6 +74,35 @@ Function Get-MDCAzureSubscriptionRoles {
             $roleAssignmentObjectId = ""
             $roleAssignmentObjectId = $roleAssignment.ObjectId
             Write-Verbose "Processing role assignment on subscription $resourceName assigned to $roleAssignmentDisplayName"
+            $memberType = ""
+            $memberType = $roleAssignment.ObjectType
+            switch($memberType){
+                {$_ -like "*user*"}{
+                    #If role assignment is a user, extract user properties and add a new object to the array
+                    Write-Verbose "Standard user assignment. Creating entry for $roleAssignmentDisplayName"
+                    $psobjSubscriptionRoles += [PSCustomObject]@{
+                        RoleType = "Azure"
+                        Scope = "Subscription"
+                        ResourceId = $resourceId
+                        ResourceName = $resourceName
+                        ResourceType = $resourceType
+                        RoleName = $roleAssignment.RoleDefinitionName
+                        MemberName = $roleAssignmentDisplayName
+                        MemberType = $memberType
+                        MemberUpnOrAppId = $roleAssignment.SignInName
+                        MemberObjId = $roleAssignmentObjectId
+                    }
+                    ;Break
+                }
+                {$_ -like "*serviceprincipal*"}{
+                    Write-Verbose "Group"
+                    ;Break
+                }
+                {$_ -like "*group*"}{
+                    Write-Verbose "Group"
+                    ;Break
+                }
+            }
 
 
 
@@ -132,7 +161,6 @@ Function Get-MDCAzureSubscriptionRoles {
 
 
 
-            
             if ($roleAssignment.ObjectType -like "*group*") { #If role assignment is a group, get the members of the group
                 Write-Verbose "$($role.DisplayName) is a group"
                 $arrGroupMembers = @()
