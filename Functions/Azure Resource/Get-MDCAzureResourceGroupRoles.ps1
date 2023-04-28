@@ -59,23 +59,33 @@ Function Get-MDCAzureResourceGroupRoles {
     $psobjResourceGroupRoles = @()
     # Loop through each resource group and collect role assignments
     foreach($rg in $arrAzureResourceGroups){
-        Write-Verbose "Processing resource group $($rg.ResourceGroupName)"
+        $resourceId = ""
+        $resourceType = ""
+        $resourceName = ""
+        $resourceId = $rg.ResourceId #check to see if this is accurate
+        $resourceType = "Resource Group"
+        $resourceName = $rg.ResourceGroupName     
+        Write-Verbose "Processing resource group $resourceName"
         $arrResourceGroupRoleAssignments = @()
         $arrResourceGroupRoleAssignments = Get-AzRoleAssignment -ResourceGroupName $rg.ResourceGroupName | Where-Object {$_.Scope -like "*resourceGroups/$($rg.ResourceGroupName)"}
         foreach($roleAssignment in $arrResourceGroupRoleAssignments){
-            Write-Verbose "Processing role assignment for $($roleAssignment.DisplayName) in resource group $($rg.ResourceGroupName)"
+            $roleAssignmentDisplayName = ""
+            $roleAssignmentDisplayName = $roleAssignment.DisplayName
+            $roleAssignmentObjectId = ""
+            $roleAssignmentObjectId = $roleAssignment.ObjectId
+            Write-Verbose "Processing role assignment on $resourceName for $roleAssignmentDisplayName "
             $memberType = ""
             $memberType = $roleAssignment.ObjectType
             switch($memberType){
                 {$_ -like "*user*"}{
                     #If role assignment is a user, extract user properties and add a new object to the array
-                    Write-Verbose "Standard user assignment. Creating entry for $($roleAssignment.DisplayName)"
+                    Write-Verbose "Standard user assignment. Creating entry for $roleAssignmentDisplayName"
                     $psobjResourceGroupRoles += [PSCustomObject]@{
                         RoleType = "Azure"
                         Scope = "Resource Group"
-                        ResourceId = $rg.ResourceId
-                        ResourceType = "Resource Group"
-                        ResourceName = $rg.ResourceGroupName
+                        ResourceId = $resourceId
+                        ResourceType = $resourceType
+                        ResourceName = $resourceName
                         RoleName = $roleAssignment.RoleDefinitionName
                         MemberName = $roleAssignment.DisplayName
                         MemberType = $memberType
