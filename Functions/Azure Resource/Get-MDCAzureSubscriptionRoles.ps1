@@ -7,9 +7,9 @@
     This is a custom function written by Mark Connelly, so it may not work as intended.
     Version:        1.0
     Author:         Mark D. Connelly Jr.
-    Last Updated:   04-25-2023 - Mark Connelly
+    Last Updated:   04-28-2023 - Mark Connelly
     Creation Date:  04-25-2023
-    Purpose/Change: Initial script development
+    Purpose/Change: Updated logic to use switch statements instead of if statements. Added additional comments and corrected verbose logging.
 .LINK
     #
 .EXAMPLE
@@ -25,8 +25,12 @@ Function Get-MDCAzureSubscriptionRoles {
     # Check the current connections to Azure and M365. If not connected, stop the function.
     $currentAzContext = Get-AzContext
     $currentMgContext = Get-MgContext
-    if($null -eq $currentAzContext -or $null -eq $currentMgContext){
-        Write-Error "Not connected to the cloud. Please connect to the cloud before running this function."
+    if($null -eq $currentAzContext){
+        Write-Error "Not connected to the Azure Resource Manager. Please connect before running this function."
+        return
+    }
+    if($null -eq $currentMgContext){
+        Write-Error "Not connected to the Microsoft Graph. Please connect before running this function."
         return
     }
 
@@ -48,17 +52,87 @@ Function Get-MDCAzureSubscriptionRoles {
     $psobjSubscriptionRoles = @()
     # Loop through each subscription and collect role assignments
     foreach($sub in $arrAzureSubscriptions){
-        Write-Verbose "Processing subscription $($sub.DisplayName)"
+        $resourceId = ""
+        $resourceType = ""
+        $resourceName = ""
+        $resourceId = $sub.Id
+        $resourceType = "Subscription"
+        $resourceName = $sub.DisplayName
+
+        Write-Verbose "Processing subscription $resourceName"
 
         # Set the context to the subscription before running the loop algorithm
-        Write-Verbose "Setting context to subscription $($sub.DisplayName)"
-        Set-AzContext -SubscriptionId $sub.Id | Out-Null
+        Write-Verbose "Setting context to subscription $resourceName"
+        Set-AzContext -SubscriptionId $resourceId | Out-Null
 
         # Collect role assignments at the subscription scope
         $arrSubscriptionRoleAssignments = @()
         $arrSubscriptionRoleAssignments = Get-AzRoleAssignment | Where-Object {$_.Scope -eq "/subscriptions/$($sub.Id)"}
         foreach($roleAssignment in $arrSubscriptionRoleAssignments){
-            Write-Verbose "Processing role assignment for $($roleAssignment.DisplayName) in subscription $($sub.DisplayName)"
+            $roleAssignmentDisplayName = ""
+            $roleAssignmentDisplayName = $roleAssignment.DisplayName
+            $roleAssignmentObjectId = ""
+            $roleAssignmentObjectId = $roleAssignment.ObjectId
+            Write-Verbose "Processing role assignment on subscription $resourceName assigned to $roleAssignmentDisplayName"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
             if ($roleAssignment.ObjectType -like "*group*") { #If role assignment is a group, get the members of the group
                 Write-Verbose "$($role.DisplayName) is a group"
                 $arrGroupMembers = @()
