@@ -117,7 +117,7 @@ Function Get-MDCAzureResourceRoles {
                         Scope = "Resource"
                         ResourceId = $resourceId
                         ResourceType = $resourceType
-                        ResourceName = $resourceGroupName
+                        ResourceName = $resourceName
                         RoleName = $roleAssignment.RoleDefinitionName
                         MemberName = $servicePrincipalDisplayName
                         MemberType = "Service Principal"
