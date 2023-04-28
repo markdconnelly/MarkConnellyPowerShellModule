@@ -25,8 +25,12 @@ Function Get-MDCAzureResourceRoles {
     # Check the current connections to Azure and M365. If not connected, stop the function.
     $currentAzContext = Get-AzContext
     $currentMgContext = Get-MgContext
-    if($null -eq $currentAzContext -or $null -eq $currentMgContext){
-        Write-Error "Not connected to the cloud. Please connect to the cloud before running this function."
+    if($null -eq $currentAzContext){
+        Write-Error "Not connected to the Azure Resource Manager. Please connect before running this function."
+        return
+    }
+    if($null -eq $currentMgContext){
+        Write-Error "Not connected to the Microsoft Graph. Please connect before running this function."
         return
     }
 
