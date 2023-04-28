@@ -45,7 +45,7 @@ Function Get-MDCAzureResourceRoles {
             Set-AzContext -SubscriptionId $sub.Id | Out-Null
             $subName = $sub.Name
             Write-Verbose "Context set to subscription $subName"
-            $arrAzureResources += Get-AzResource
+            $arrAzureResources += Get-AzResource -ErrorAction SilentlyContinue
             Write-Verbose "Resources collected for subscription $subName"
         }
         Write-Verbose "Array of resources populated"
