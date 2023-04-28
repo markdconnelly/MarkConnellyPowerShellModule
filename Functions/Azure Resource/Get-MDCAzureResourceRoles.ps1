@@ -7,9 +7,9 @@
     This is a custom function written by Mark Connelly, so it may not work as intended.
     Version:        1.0
     Author:         Mark D. Connelly Jr.
-    Last Updated:   04-27-2023 - Mark Connelly
+    Last Updated:   04-28-2023 - Mark Connelly
     Creation Date:  04-24-2023
-    Purpose/Change: Initial script development
+    Purpose/Change: Updated logic to use switch statements instead of if statements. Added additional comments and corrected verbose logging.
 .LINK
     #
 .EXAMPLE
