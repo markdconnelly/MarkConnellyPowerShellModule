@@ -86,14 +86,14 @@ Function Get-MDCAzureResourceRoles {
                     $psobjResourceRoles += [PSCustomObject]@{
                         RoleType = "Azure"
                         Scope = "Resource"
-                        ResourceId = $resource.ResourceId
-                        ResourceType = $resource.ResourceType
-                        ResourceName = $resource.ResourceGroupName
+                        ResourceId = $resourceId
+                        ResourceType = $resourceType
+                        ResourceName = $resourceName
                         RoleName = $roleAssignment.RoleDefinitionName
-                        MemberName = $roleAssignment.DisplayName
+                        MemberName = $roleAssignmentDisplayName
                         MemberType = $memberType
                         MemberUpnOrAppId = $roleAssignment.SignInName
-                        MemberObjId = $roleAssignment.ObjectId
+                        MemberObjId = $roleAssignmentObjectId
                     }
                     ;Break
                 }
