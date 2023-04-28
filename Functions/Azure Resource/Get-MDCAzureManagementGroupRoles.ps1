@@ -75,7 +75,7 @@ Function Get-MDCAzureManagementGroupRoles {
                         Scope = "Management Group"
                         ResourceId = $mgId
                         ResourceName = $mgName
-                        ResourceType = "Management Group"
+                        ResourceType = $mgType
                         RoleName = $roleAssignment.RoleDefinitionName
                         MemberName = $roleAssignmentDisplayName
                         MemberType = "User"
@@ -104,17 +104,89 @@ Function Get-MDCAzureManagementGroupRoles {
                         Scope = "Management Group"
                         ResourceId = $mgId
                         ResourceName = $mgName
-                        ResourceType = "Management Group"
+                        ResourceType = $mgType
                         RoleName = $roleAssignment.RoleDefinitionName
-                        MemberName = $memberName
-                        MemberType = $memberType
-                        MemberUpn = $memberUPN
-                        MemberObjId = $roleAssignment.ObjectId
+                        MemberName = $servicePrincipalDisplayName
+                        MemberType = "Service Principal"
+                        MemberUpn = $servicePrinipalAppId
+                        MemberObjId = $roleAssignmentObjectId
                     }
                     ;Break
                 }
                 {$_ -like "*group*"}{
-
+                    #If role assignment is a group, loop through each member and create an entry with their properties in the array and add it to the object
+                    Write-Verbose "Group assignment. Getting members for $roleAssignmentDisplayName"
+                    $arrGroupMembers = @()
+                    $viaGroupName = "Group - $roleAssignmentDisplayName"
+                    # try to get group members
+                    try {
+                        Write-Verbose "Collecting members of group $roleAssignmentDisplayName"
+                        $arrGroupMembers = Get-MgGroupTransitiveMember -GroupId $roleAssignmentObjectId -ErrorAction Stop
+                        $groupMember = "" 
+                                                # if you can get the group members, loop through each member, evaluate what type of object it is, and add a record to the array
+                                                foreach($groupMember in $arrGroupMembers){
+                                                    $groupMemberProperties = ""
+                                                    $groupMemberProperties = $groupMember.AdditionalProperties
+                                                    $memberName = ""
+                                                    $memberUPN = ""
+                                                    $memberType = ""
+                                                    $memberObjId = ""
+                                                    $memberName = $groupMemberProperties.displayName
+                                                    $memberType = $groupMemberProperties.'@odata.type'
+                                                    $memberUPN = $groupMemberProperties.userPrincipalName
+                                                    $memberObjId = $groupMemberProperties.id
+                                                    switch($memberType){
+                                                        {$_ -like "*user*"}{
+                                                            Write-Verbose "Creating user entry for member $memberUPN"
+                                                            $psobjManagementGroupRoles += [PSCustomObject]@{
+                                                                RoleType = "Azure"
+                                                                Scope = "Management Group"
+                                                                ResourceId = $mgId
+                                                                ResourceName = $mgName
+                                                                ResourceType = $mgType
+                                                                RoleName = $roleAssignment.RoleDefinitionName
+                                                                MemberName = $memberName
+                                                                MemberType = $viaGroupName
+                                                                MemberUpn = $memberUPN
+                                                                MemberObjId = $roleAssignmentObjectId
+                                                            }
+                                                            ;Break
+                                                        }
+                                                        {$_ -like "*group*"}{
+                                                            Write-Verbose "Creating group entry for member $memberName"
+                                                            $psobjManagementGroupRoles += [PSCustomObject]@{
+                                                                RoleType = "Azure"
+                                                                Scope = "Management Group"
+                                                                ResourceId = $mgId
+                                                                ResourceName = $mgName
+                                                                ResourceType = $mgType
+                                                                RoleName = $roleAssignment.RoleDefinitionName
+                                                                MemberName = $memberName
+                                                                MemberType = $viaGroupName
+                                                                MemberUpn = $memberName
+                                                                MemberObjId = $memberObjId
+                                                            }
+                                                            ;Break
+                                                        }
+                                                    }
+                                                }
+                    }
+                    catch {
+                        Write-Verbose "Unable to get members of group $roleAssignmentDisplayName"
+                        Write-Verbose "Creating entry for group $roleAssignmentDisplayName"
+                        $psobjManagementGroupRoles += [PSCustomObject]@{
+                            RoleType = "Azure"
+                            Scope = "Management Group"
+                            ResourceId = $mgId
+                            ResourceName = $mgName
+                            ResourceType = $mgType
+                            RoleName = $roleAssignment.RoleDefinitionName
+                            MemberName = $roleAssignmentDisplayName
+                            MemberType = "Group - Unable to get members"
+                            MemberUpn = $roleAssignment.SignInName
+                            MemberObjId = $roleAssignmentObjectId
+                        }
+                    }
                     ;Break
                 }
                 {$_ -like "*unknown*"}{
