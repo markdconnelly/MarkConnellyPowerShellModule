@@ -162,7 +162,7 @@ Function Get-MDCAzureResourceRoles {
                                         MemberName = $memberName
                                         MemberType = $viaGroupName
                                         MemberUpnOrAppId = $memberUPN
-                                        MemberObjId = $roleAssignment.ObjectId
+                                        MemberObjId = $roleAssignmentObjectId
                                     }
                                     ;Break
                                 }
