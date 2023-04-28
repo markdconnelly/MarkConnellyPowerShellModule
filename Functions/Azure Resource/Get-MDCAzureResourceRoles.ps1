@@ -91,7 +91,7 @@ Function Get-MDCAzureResourceRoles {
                         ResourceName = $resourceName
                         RoleName = $roleAssignment.RoleDefinitionName
                         MemberName = $roleAssignmentDisplayName
-                        MemberType = $memberType
+                        MemberType = "User"
                         MemberUpnOrAppId = $roleAssignment.SignInName
                         MemberObjId = $roleAssignmentObjectId
                     }
@@ -120,7 +120,7 @@ Function Get-MDCAzureResourceRoles {
                         ResourceName = $resourceGroupName
                         RoleName = $roleAssignment.RoleDefinitionName
                         MemberName = $servicePrincipalDisplayName
-                        MemberType = $memberType
+                        MemberType = "Service Principal"
                         MemberUpnOrAppId = $servicePrinipalAppId
                         MemberObjId = $roleAssignmentObjectId
                     }
