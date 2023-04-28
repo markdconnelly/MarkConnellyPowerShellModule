@@ -7,7 +7,7 @@
     This is a custom function written by Mark Connelly, so it may not work as intended.
     Version:        1.0
     Author:         Mark D. Connelly Jr.
-    Last Updated:   04-25-2023 - Mark Connelly
+    Last Updated:   04-28-2023 - Mark Connelly
     Creation Date:  04-25-2023
     Purpose/Change: Initial script development
 .LINK
@@ -25,8 +25,12 @@ Function Get-MDCAzureManagementGroupRoles {
     # Check the current connections to Azure and M365. If not connected, stop the function.
     $currentAzContext = Get-AzContext
     $currentMgContext = Get-MgContext
-    if($null -eq $currentAzContext -or $null -eq $currentMgContext){
-        Write-Error "Not connected to the cloud. Please connect to the cloud before running this function."
+    if($null -eq $currentAzContext){
+        Write-Error "Not connected to the Azure Resource Manager. Please connect before running this function."
+        return
+    }
+    if($null -eq $currentMgContext){
+        Write-Error "Not connected to the Microsoft Graph. Please connect before running this function."
         return
     }
     
@@ -45,9 +49,88 @@ Function Get-MDCAzureManagementGroupRoles {
     # Loop through each management group and collect role assignments
     $psobjManagementGroupRoles = @()
     foreach($managementGroup in $arrAzureManagementGroups){
+        
+        $mgId = ""
+        $mgType = ""
+        $mgName = ""
+        $mgId = $managementGroup.Id
+        $mgType = "Management Group"
+        $mgName = $managementGroup.DisplayName
+        Write-Verbose "Processing management group $mgName"
         $arrManagementGroupRoleAssignments = @()
         $arrManagementGroupRoleAssignments = Get-AzRoleAssignment -Scope $managementGroup.Id | Where-Object {$_.Scope -eq $managementGroup.Id}
         foreach($roleAssignment in $arrManagementGroupRoleAssignments){
+            $roleAssignmentDisplayName = ""
+            $roleAssignmentDisplayName = $roleAssignment.DisplayName
+            $roleAssignmentObjectId = ""
+            $roleAssignmentObjectId = $roleAssignment.ObjectId
+            $memberType = ""
+            $memberType = $roleAssignment.ObjectType
+            switch ($memberType) {
+                {$_ -like "*user*"}{
+                    #If role assignment is a user, extract user properties and add a new object to the array
+                    Write-Verbose "Standard user assignment. Creating entry for $roleAssignmentDisplayName"
+                    $psobjManagementGroupRoles += [PSCustomObject]@{
+                        RoleType = "Azure"
+                        Scope = "Management Group"
+                        ResourceId = $mgId
+                        ResourceName = $mgName
+                        ResourceType = "Management Group"
+                        RoleName = $roleAssignment.RoleDefinitionName
+                        MemberName = $roleAssignmentDisplayName
+                        MemberType = "User"
+                        MemberUpn = $roleAssignment.SignInName
+                        MemberObjId = $roleAssignmentObjectId
+                    }
+                    ;Break
+                }
+                {$_ -like "*serviceprincipal*"}{
+
+                    ;Break
+                }
+                {$_ -like "*group*"}{
+
+                    ;Break
+                }
+                {$_ -like "*unknown*"}{
+                    Write-Verbose "Unknown assignment. Creating entry for $roleAssignmentObjectId"
+                    $psobjManagementGroupRoles += [PSCustomObject]@{
+                        RoleType = "Azure"
+                        Scope = "Management Group"
+                        ResourceId = $mgId
+                        ResourceName = $mgName
+                        ResourceType = "Management Group"
+                        RoleName = $roleAssignment.RoleDefinitionName
+                        MemberName = $memberName
+                        MemberType = $memberType
+                        MemberUpn = $memberUPN
+                        MemberObjId = $roleAssignment.ObjectId
+                    }
+                    ;Break
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             if($roleAssignment.ObjectType -like "*group*"){ #If role assignment is a group, get the members of the group
                 $arrGroupMembers = @()
                 $memberType = ""
