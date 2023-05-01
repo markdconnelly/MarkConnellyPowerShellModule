@@ -85,7 +85,7 @@ Function Get-MDCAzureResourceAdminReport {
             RoleName = "N/A"
             MemberName = "N/A"
             MemberType = "N/A"
-            MemberUPN = "N/A"
+            MemberUPNOrAppId = "N/A"
             MemberObjId = "N/A"
             Error = "Unable to collect Azure Management Group roles"
         }
@@ -103,7 +103,7 @@ Function Get-MDCAzureResourceAdminReport {
             RoleName = $permission.RoleName
             MemberName = $permission.MemberName
             MemberType = $permission.MemberType
-            MemberUPN = $permission.MemberUpnOrAppId
+            MemberUPNOrAppId = $permission.MemberUpnOrAppId
             MemberObjId = $permission.MemberObjId
             Error = ""
         }
@@ -128,7 +128,7 @@ Function Get-MDCAzureResourceAdminReport {
             RoleName = "N/A"
             MemberName = "N/A"
             MemberType = "N/A"
-            MemberUPN = "N/A"
+            MemberUPNOrAppId = "N/A"
             MemberObjId = "N/A"
             Error = "Unable to collect Azure Subscription roles"
         }
@@ -146,7 +146,7 @@ Function Get-MDCAzureResourceAdminReport {
             RoleName = $permission.RoleName
             MemberName = $permission.MemberName
             MemberType = $permission.MemberType
-            MemberUPN = $permission.MemberUpnOrAppId
+            MemberUPNOrAppId = $permission.MemberUpnOrAppId
             MemberObjId = $permission.MemberObjId
             Error = ""
         }
@@ -171,7 +171,7 @@ Function Get-MDCAzureResourceAdminReport {
             RoleName = "N/A"
             MemberName = "N/A"
             MemberType = "N/A"
-            MemberUPN = "N/A"
+            MemberUPNOrAppId = "N/A"
             MemberObjId = "N/A"
             Error = "Unable to collect Azure Resource Group roles"
         }
@@ -189,7 +189,7 @@ Function Get-MDCAzureResourceAdminReport {
             RoleName = $permission.RoleName
             MemberName = $permission.MemberName
             MemberType = $permission.MemberType
-            MemberUPN = $permission.MemberUpnOrAppId
+            MemberUPNOrAppId = $permission.MemberUpnOrAppId | Out-String
             MemberObjId = $permission.MemberObjId
             Error = ""
         }
@@ -214,7 +214,7 @@ Function Get-MDCAzureResourceAdminReport {
             RoleName = "N/A"
             MemberName = "N/A"
             MemberType = "N/A"
-            MemberUPN = "N/A"
+            MemberUPNOrAppId = "N/A"
             MemberObjId = "N/A"
             Error = "Unable to collect Azure Resource roles"
         }
@@ -232,7 +232,7 @@ Function Get-MDCAzureResourceAdminReport {
             RoleName = $permission.RoleName
             MemberName = $permission.MemberName
             MemberType = $permission.MemberType
-            MemberUPN = $permission.MemberUpnOrAppId
+            MemberUPNOrAppId = $permission.MemberUpnOrAppId | Out-String
             MemberObjId = $permission.MemberObjId
             Error = ""
         }
