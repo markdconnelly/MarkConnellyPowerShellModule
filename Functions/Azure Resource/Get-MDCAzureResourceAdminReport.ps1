@@ -189,7 +189,7 @@ Function Get-MDCAzureResourceAdminReport {
             RoleName = $permission.RoleName
             MemberName = $permission.MemberName
             MemberType = $permission.MemberType
-            MemberUPNOrAppId = $permission.MemberUpnOrAppId | Out-String
+            MemberUPNOrAppId = $permission.MemberUpnOrAppId
             MemberObjId = $permission.MemberObjId
             Error = ""
         }
@@ -232,7 +232,7 @@ Function Get-MDCAzureResourceAdminReport {
             RoleName = $permission.RoleName
             MemberName = $permission.MemberName
             MemberType = $permission.MemberType
-            MemberUPNOrAppId = $permission.MemberUpnOrAppId | Out-String
+            MemberUPNOrAppId = $permission.MemberUpnOrAppId
             MemberObjId = $permission.MemberObjId
             Error = ""
         }
