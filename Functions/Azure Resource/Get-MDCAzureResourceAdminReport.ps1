@@ -103,7 +103,7 @@ Function Get-MDCAzureResourceAdminReport {
             RoleName = $permission.RoleName
             MemberName = $permission.MemberName
             MemberType = $permission.MemberType
-            MemberUPN = $permission.MemberUpn
+            MemberUPN = $permission.MemberUpnOrAppId
             MemberObjId = $permission.MemberObjId
             Error = ""
         }
@@ -146,7 +146,7 @@ Function Get-MDCAzureResourceAdminReport {
             RoleName = $permission.RoleName
             MemberName = $permission.MemberName
             MemberType = $permission.MemberType
-            MemberUPN = $permission.MemberUpn
+            MemberUPN = $permission.MemberUpnOrAppId
             MemberObjId = $permission.MemberObjId
             Error = ""
         }
@@ -189,7 +189,7 @@ Function Get-MDCAzureResourceAdminReport {
             RoleName = $permission.RoleName
             MemberName = $permission.MemberName
             MemberType = $permission.MemberType
-            MemberUPN = $permission.MemberUpn
+            MemberUPN = $permission.MemberUpnOrAppId
             MemberObjId = $permission.MemberObjId
             Error = ""
         }
@@ -232,7 +232,7 @@ Function Get-MDCAzureResourceAdminReport {
             RoleName = $permission.RoleName
             MemberName = $permission.MemberName
             MemberType = $permission.MemberType
-            MemberUPN = $permission.MemberUpn
+            MemberUPN = $permission.MemberUpnOrAppId
             MemberObjId = $permission.MemberObjId
             Error = ""
         }
