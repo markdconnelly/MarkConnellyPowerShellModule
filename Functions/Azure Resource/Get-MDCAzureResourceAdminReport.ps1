@@ -243,7 +243,7 @@ Function Get-MDCAzureResourceAdminReport {
     if($ExportPath){
         try {
             Write-Verbose "Exporting Azure Resource Admin Report to $ExportPath"
-            Out-MDCToCSV -PSObj $psobjRoles -ExportPath $ExportPath -FileName "AzureResourceAdminReport"
+            Out-MDCToCSV -PSObj $psobjAzureResourceAdminRoleReport -ExportPath $ExportPath -FileName "AzureResourceAdminReport"
             Write-Verbose "Export completed"
         }
         catch {
