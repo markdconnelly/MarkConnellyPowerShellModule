@@ -102,7 +102,7 @@ Function Get-MDCAzureADAdminReport {
         
         try {
             Write-Verbose "Exporting Azure Resource Admin Report to $ExportPath"
-            Out-MDCToCSV -PSObj $psobjRoles -ExportPath $ExportPath -FileName "AzureResourceAdminReport"
+            Out-MDCToCSV -PSObj $psobjAzureADAdminReport -ExportPath $ExportPath -FileName "AzureResourceAdminReport"
             Write-Verbose "Export completed"
         }
         catch {
