@@ -39,7 +39,7 @@ Function Get-MDCAzureResourceRoles {
 
     # Try to get Azure subscriptions and build an array of resources. If unable to get subscriptions, stop the function.
     try {
-        $arrAzureSubscriptions = Get-AzSubscription -ErrorAction Stop
+        $arrAzureSubscriptions = Get-AzSubscription -ErrorAction Stop | Where-Object {$_.State -eq "Enabled"}
         Write-Verbose "Subscriptions collected"
         foreach($sub in $arrAzureSubscriptions){
             Set-AzContext -SubscriptionId $sub.Id | Out-Null
