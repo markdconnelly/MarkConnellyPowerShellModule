@@ -42,10 +42,12 @@ Function Get-MDCAzureResourceGroupRoles {
         $arrAzureSubscriptions = Get-AzSubscription -ErrorAction Stop
         Write-Verbose "Subscriptions collected"
         foreach($sub in $arrAzureSubscriptions){
+            $subDisplayName = ""
+            $subDisplayName = $sub.DisplayName
             Set-AzContext -SubscriptionId $sub.Id | Out-Null
-            Write-Verbose "Context set to subscription $($sub.DisplayName)"
+            Write-Verbose "Context set to subscription $subDisplayName"
             $arrAzureResourceGroups += Get-AzResourceGroup -ErrorAction SilentlyContinue
-            Write-Verbose "Resource groups collected for subscription $($sub.DisplayName)"
+            Write-Verbose "Resource groups collected for subscription $subDisplayName"
         }
         Write-Verbose "Array of resource groups populated"
     }
