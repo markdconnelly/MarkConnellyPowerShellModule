@@ -65,6 +65,7 @@ Function Get-MDCAzureADAdminReport {
     foreach($role in $arrAAD_Roles){
         $roleName = ""
         $roleName = $role.AdditionalProperties.displayName
+        
         foreach($user in $userRoleMappingArray){
             $psobjAzureADAdminReport += [PSCustomObject]@{
                 ServicePrincipalType = $user.ServicePrincipalType
