@@ -74,7 +74,7 @@ Function Get-MDCAzureManagementGroupRoles {
                             RoleName = $roleAssignment.RoleDefinitionName
                             MemberName = $memberName
                             MemberType = $memberType
-                            MemberUpn = $memberUPN
+                            MemberUpnOrAppId = $memberUPN
                             MemberObjId = $roleAssignment.ObjectId
                         }
                     }
@@ -94,7 +94,7 @@ Function Get-MDCAzureManagementGroupRoles {
                         RoleName = $roleAssignment.RoleDefinitionName
                         MemberName = $roleAssignment.DisplayName
                         MemberType = $roleAssignment.ObjectType
-                        MemberUpn = "Unable to resolve members"
+                        MemberUpnOrAppId = "Unable to resolve members"
                         MemberObjId = $roleAssignment.ObjectId
                     }
                 }
