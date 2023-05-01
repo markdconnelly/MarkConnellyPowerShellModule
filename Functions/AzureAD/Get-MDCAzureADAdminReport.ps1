@@ -38,11 +38,11 @@ Function Get-MDCAzureADAdminReport {
         return
     }
     
-    # Collect an array of all AAD roles with "Admin" in the name
+    # Collect an array of all AAD roles 
     $arrAAD_Roles = @()
     try {
         Write-Verbose "Collecting AAD Roles"
-        $arrAAD_Roles = Get-MgDirectoryRole -ErrorAction Stop | Where-Object {$_.DisplayName -like "*Admin*"}
+        $arrAAD_Roles = Get-MgDirectoryRole -ErrorAction Stop
     }
     catch {
         Write-Host "Unable to get AAD Roles" -BackgroundColor Black -ForegroundColor Red
