@@ -79,7 +79,7 @@ Function Get-MDCAzureManagementGroupRoles {
                         RoleName = $roleAssignment.RoleDefinitionName
                         MemberName = $roleAssignmentDisplayName
                         MemberType = "User"
-                        MemberUpn = $roleAssignment.SignInName
+                        MemberUpnOrAppId = $roleAssignment.SignInName
                         MemberObjId = $roleAssignmentObjectId
                     }
                     ;Break
@@ -108,7 +108,7 @@ Function Get-MDCAzureManagementGroupRoles {
                         RoleName = $roleAssignment.RoleDefinitionName
                         MemberName = $servicePrincipalDisplayName
                         MemberType = "Service Principal"
-                        MemberUpn = $servicePrinipalAppId
+                        MemberUpnOrAppId = $servicePrinipalAppId
                         MemberObjId = $roleAssignmentObjectId
                     }
                     ;Break
@@ -147,7 +147,7 @@ Function Get-MDCAzureManagementGroupRoles {
                                                                 RoleName = $roleAssignment.RoleDefinitionName
                                                                 MemberName = $memberName
                                                                 MemberType = $viaGroupName
-                                                                MemberUpn = $memberUPN
+                                                                MemberUpnOrAppId = $memberUPN
                                                                 MemberObjId = $roleAssignmentObjectId
                                                             }
                                                             ;Break
@@ -163,7 +163,7 @@ Function Get-MDCAzureManagementGroupRoles {
                                                                 RoleName = $roleAssignment.RoleDefinitionName
                                                                 MemberName = $memberName
                                                                 MemberType = $viaGroupName
-                                                                MemberUpn = $memberName
+                                                                MemberUpnOrAppId = $memberName
                                                                 MemberObjId = $memberObjId
                                                             }
                                                             ;Break
@@ -183,7 +183,7 @@ Function Get-MDCAzureManagementGroupRoles {
                             RoleName = $roleAssignment.RoleDefinitionName
                             MemberName = $roleAssignmentDisplayName
                             MemberType = "Group - Unable to get members"
-                            MemberUpn = $roleAssignment.SignInName
+                            MemberUpnOrAppId = $roleAssignment.SignInName
                             MemberObjId = $roleAssignmentObjectId
                         }
                     }
@@ -200,7 +200,7 @@ Function Get-MDCAzureManagementGroupRoles {
                         RoleName = $roleAssignment.RoleDefinitionName
                         MemberName = $memberName
                         MemberType = $memberType
-                        MemberUpn = $memberUPN
+                        MemberUpnOrAppId = $memberUPN
                         MemberObjId = $roleAssignment.ObjectId
                     }
                     ;Break
