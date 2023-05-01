@@ -11,7 +11,7 @@
     Creation Date:  04-18-2023
     Purpose/Change: Updating to be cleaner and use sub functions better. 
 .LINK
-    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/AzureAD/ConditionalAccess/Get-MDCConditionalAccessExecutiveSummary.ps1
+    https://github.com/markdconnelly/MarkConnellyPowerShellModule/blob/main/Functions/Azure%20Resource/Get-MDCAzureAdminReport.ps1
 .EXAMPLE
     Get-MDCAzureResourceAdminReport
     Get-MDCAzureResourceAdminReport -ExportPath "C:\Temp\"
@@ -69,9 +69,12 @@ Function Get-MDCAzureResourceAdminReport {
 
     # Try to get permissions at the management group scope
     try {
+        Write-Verbose "Trying to get management group roles"
         $arrAzureManagementGroupRoles = Get-MDCAzureManagementGroupRoles -ErrorAction Stop
+        Write-Verbose "Successfully collected management group roles"
     }
     catch {
+        Write-Verbose "Unable to collect Azure Management Group roles. Creating an error entry in the report."
         Write-Error "Unable to collect Azure Management Group roles"
         $psobjAzureResourceAdminRoleReport += [PSCustomObject]@{
             RoleType = "Azure"
@@ -89,6 +92,7 @@ Function Get-MDCAzureResourceAdminReport {
     }
     
     # Loop through each management group permission to build the report
+    Write-Verbose "Looping through each management group role to extract permissions."
     foreach($permission in $arrAzureManagementGroupRoles){
         $psobjAzureResourceAdminRoleReport += [PSCustomObject]@{
             RoleType = "Azure"
@@ -99,17 +103,21 @@ Function Get-MDCAzureResourceAdminReport {
             RoleName = $permission.RoleName
             MemberName = $permission.MemberName
             MemberType = $permission.MemberType
-            MemberUPN = $permission.MemberUpn
+            MemberUPN = $permission.MemberUpnOrAppId
             MemberObjId = $permission.MemberObjId
             Error = ""
         }
     }
+    Write-Verbose "Management Group roles complete."
 
     # Try to get permissions at the subscription scope
     try {
+        Write-Verbose "Trying to get subscription roles"
         $arrAzureSubscriptionRoles = Get-MDCAzureSubscriptionRoles -ErrorAction Stop
+        Write-Verbose "Successfully collected subscription roles"
     }
     catch {
+        Write-Verbose "Unable to collect Azure Subscription roles. Creating an error entry in the report."
         Write-Error "Unable to collect Azure Subscription roles"
         $psobjAzureResourceAdminRoleReport += [PSCustomObject]@{
             RoleType = "Azure"
@@ -127,6 +135,7 @@ Function Get-MDCAzureResourceAdminReport {
     }
     
     # Loop through each subscription permission to build the report
+    Write-Verbose "Looping through each subscription role to extract permissions."
     foreach($permission in $arrAzureSubscriptionRoles){
         $psobjAzureResourceAdminRoleReport += [PSCustomObject]@{
             RoleType = "Azure"
@@ -137,17 +146,21 @@ Function Get-MDCAzureResourceAdminReport {
             RoleName = $permission.RoleName
             MemberName = $permission.MemberName
             MemberType = $permission.MemberType
-            MemberUPN = $permission.MemberUpn
+            MemberUPN = $permission.MemberUpnOrAppId
             MemberObjId = $permission.MemberObjId
             Error = ""
         }
     }
+    Write-Verbose "Subscription roles complete."
 
     # Try to get permissions at the resource group scope
     try {
+        Write-Verbose "Trying to get resource group roles"
         $arrAzureResourceGroupRoles = Get-MDCAzureResourceGroupRoles -Verbose -ErrorAction Stop
+        Write-Verbose "Successfully collected resource group roles"
     }
     catch {
+        Write-Verbose "Unable to collect Azure Resource Group roles. Creating an error entry in the report."
         Write-Error "Unable to collect Azure Resource Group roles"
         $psobjAzureResourceAdminRoleReport += [PSCustomObject]@{
             RoleType = "Azure"
@@ -165,6 +178,7 @@ Function Get-MDCAzureResourceAdminReport {
     }
 
     # Loop through each subscription permission to build the report
+    Write-Verbose "Looping through each resource group role to extract permissions."
     foreach($permission in $arrAzureResourceGroupRoles){
         $psobjAzureResourceAdminRoleReport += [PSCustomObject]@{
             RoleType = "Azure"
@@ -175,17 +189,21 @@ Function Get-MDCAzureResourceAdminReport {
             RoleName = $permission.RoleName
             MemberName = $permission.MemberName
             MemberType = $permission.MemberType
-            MemberUPN = $permission.MemberUpn
+            MemberUPN = $permission.MemberUpnOrAppId
             MemberObjId = $permission.MemberObjId
             Error = ""
         }
     }
+    Write-Verbose "Resource Group roles complete."
 
     # Try to get permissions at the resource scope
     try {
+        Write-Verbose "Trying to get resource roles"
         $arrAzureResourceRoles = Get-MDCAzureResourceRoles -ErrorAction Stop
+        Write-Verbose "Successfully collected resource roles"
     }
     catch {
+        Write-Verbose "Unable to collect Azure Resource roles. Creating an error entry in the report."
         Write-Error "Unable to collect Azure Resource roles"
         $psobjAzureResourceAdminRoleReport += [PSCustomObject]@{
             RoleType = "Azure"
@@ -203,6 +221,7 @@ Function Get-MDCAzureResourceAdminReport {
     }
 
     # Loop through each subscription permission to build the report
+    Write-Verbose "Looping through each resource role to extract permissions."
     foreach($permission in $arrAzureResourceRoles){
         $psobjAzureResourceAdminRoleReport += [PSCustomObject]@{
             RoleType = "Azure"
@@ -213,18 +232,18 @@ Function Get-MDCAzureResourceAdminReport {
             RoleName = $permission.RoleName
             MemberName = $permission.MemberName
             MemberType = $permission.MemberType
-            MemberUPN = $permission.MemberUpn
+            MemberUPN = $permission.MemberUpnOrAppId
             MemberObjId = $permission.MemberObjId
             Error = ""
         }
-    }#endregion
-
+    }
+    Write-Verbose "Resource roles complete."
 
     # Export the array of permissions to a CSV file if an export path is specified
     if($ExportPath){
         try {
             Write-Verbose "Exporting Azure Resource Admin Report to $ExportPath"
-            Out-MDCToCSV -PSObj $psobjRoles -ExportPath $ExportPath -FileName "AzureResourceAdminReport"
+            Out-MDCToCSV -PSObj $psobjAzureResourceAdminRoleReport -ExportPath $ExportPath -FileName "AzureResourceAdminReport"
             Write-Verbose "Export completed"
         }
         catch {
