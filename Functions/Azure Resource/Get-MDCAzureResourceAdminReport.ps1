@@ -135,8 +135,8 @@ Function Get-MDCAzureResourceAdminReport {
     }
     
     # Loop through each subscription permission to build the report
+    Write-Verbose "Looping through each subscription role to extract permissions."
     foreach($permission in $arrAzureSubscriptionRoles){
-        Write-Verbose "Looping through each subscription role to extract permissions."
         $psobjAzureResourceAdminRoleReport += [PSCustomObject]@{
             RoleType = "Azure"
             Scope = $permission.Scope
