@@ -44,6 +44,8 @@ foreach ($Group in $HideFromGalGroups){
     $strGroupName = $Group.name
     $boolReplaceShowInAddressBook = $false
     $boolClearShowInAddressBook = $false
+    $error1 = ""
+    $error2 = ""
     # End loop variable
 
     # Try to update the attribute msExchHideFromAddressLists to true. If it fails, instantiate the variable to false for the final report
@@ -53,6 +55,7 @@ foreach ($Group in $HideFromGalGroups){
     }
     catch {
         $boolReplaceShowInAddressBook = $false
+        $error1 = $_.Exception.Message
     }
     
     # Try to clear the ShowInAddressBook attribute. If it fails, instantiate the variable to false for the final report
@@ -62,6 +65,7 @@ foreach ($Group in $HideFromGalGroups){
     }
     catch {
         $boolClearShowInAddressBook = $false
+        $error2 = $_.Exception.Message
     }
 
     # Populate the PSObject with the results of the loop for a final export to csv
@@ -69,6 +73,8 @@ foreach ($Group in $HideFromGalGroups){
         DistroName = $strGroupName
         HiddenFromGAL = $boolReplaceShowInAddressBook
         ClearedFromGAL = $boolClearShowInAddressBook
+        AttributeSet = $error1
+        AttributeCleared = $error2
     } 
 }
 
