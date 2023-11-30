@@ -1,3 +1,11 @@
+# Purpose: This script is specifically written to target the root active directory object and set it's mail attribute to hide it from the GAL.
+#          This is required because the Microsoft Graph commands are ineffective at modifying the cloud object without Group Write Back enabled. 
+#          Because of this, the on-premises object must be modified and then synced to the cloud. There is no on prem Exchange server in this environment, so this script is used.
+# Author: Mark D. Connelly Jr. 
+# Date: 11/27/2020
+# Version: 1.0.0
+# Status: Untested
+
 #############################################
 # SET THESE VARIABLES
 #############################################
